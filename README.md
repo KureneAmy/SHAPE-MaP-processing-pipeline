@@ -153,7 +153,8 @@ Here stands an throughout workflow of data analysis.
             untreated:
               R1 : "data/samples/SRR30943152_1.fastq.gz"
               R2 : "data/samples/SRR30943152_2.fastq.gz"
-
+        output_dir: "output/"
+        container: "shapemap.sif"
         # Target reference file
         target: "data/GSE279192_Hs_DRAIC.fa"
         target_name: "Hs_DRAIC_ncRNA"
@@ -198,8 +199,12 @@ Here stands an throughout workflow of data analysis.
    * **Command Parameters**
 
       **edit `config.yaml`**
-      - `samples`:        (required) A list describing all input samples, including their names and raw FASTQ file paths. Each sample entry must contain: `sample`: the sample name; `modified`: experimental group, in which RNA molecules are covalently modified at structurally flexible, unpaired nucleotides using SHAPE chemicals; `untreated`: negative control, where no SHAPE chemical reagent is added;`R1`: path to the Read 1 FASTQ file; `R2`: path to the Read 2 FASTQ file (for paired-end data). (optional) `denatured`: positive control, where RNA is fully denatured using chemical denaturants or high temperature prior to or concurrently with the addition of the SHAPE reagent. If your dataset includes a denatured group, please set ShapeMapper2 parameters `denatured` as "true" and add sample information following the format described above.
+      - `samples`:(required) A list describing all input samples, including their names and raw FASTQ file paths. Each sample entry must contain: `sample`: the sample name; `modified`: experimental group, in which RNA molecules are covalently modified at structurally flexible, unpaired nucleotides using SHAPE chemicals; `untreated`: negative control, where no SHAPE chemical reagent is added;`R1`: path to the Read 1 FASTQ file; `R2`: path to the Read 2 FASTQ file (for paired-end data). (optional) `denatured`: positive control, where RNA is fully denatured using chemical denaturants or high temperature prior to or concurrently with the addition of the SHAPE reagent. If your dataset includes a denatured group, please set ShapeMapper2 parameters `denatured` as "true" and add sample information following the format described above.
       
+      - `output_dir`:(required) Path to the output directory where all results will be saved.
+
+      - `container`:(required) Path to the Singularity container image (`shapemap.sif`) containing all required software and dependencies.
+
       - `target`:(required) FASTA file containing the target DNA sequences. Lowercase positions will be excluded from reactivity profile, and should be used to indicate primer-binding sites if using directed primers. If multiple primer pairs were used, set `certain_primer` as "true" and provide the primer sequences in a separate file with `primers_file`.
 
       - `overwrite`:(optional) Overwrite existing files in output and temporary file folders without warning. Default: false.
