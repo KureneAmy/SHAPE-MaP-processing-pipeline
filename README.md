@@ -266,19 +266,19 @@ Here stands an throughout workflow of data analysis.
    * **Output Interpretation**
 
       - **`*_shapemapper_log.txt`**
-<img width="642" height="751" alt="2 log" src="https://github.com/user-attachments/assets/e9603eb4-2cca-4d98-ab5d-d5cb556df11d" />
+		<img width="642" height="751" alt="2 log" src="https://github.com/user-attachments/assets/e9603eb4-2cca-4d98-ab5d-d5cb556df11d" />
 
         - **Content**: Run progress and summary outputs. Includes mate pair merging stats, read alignment stats, reactivity profile quality control checks, and amplicon primer pair read depths.
         - **Application**: This is the first file you should check to assess the overall quality of your data.
 
       - **`*_mapped_depths.pdf`**
-<img width="1194" height="654" alt="3 mapped depth" src="https://github.com/user-attachments/assets/ce5f972d-45d4-48f2-8cb6-41410986c680" />
+		<img width="1194" height="654" alt="3 mapped depth" src="https://github.com/user-attachments/assets/ce5f972d-45d4-48f2-8cb6-41410986c680" />
 
         - **Content**: Figures showing simple mapped read depths. Shows reads excluded due to low aligner-reported MAPQ (mapping quality score), and shows off-target reads excluded due to not aligning near expected amplicon primer pair locations. 
         - **Application**: Reads included in analysis are further broken down by primer pair.
 
       - **`*_profile.txt`**
-<img width="1722" height="234" alt="4 profile" src="https://github.com/user-attachments/assets/bc323ca6-89d3-4ad2-ada0-e5f1b3726a90" />
+		<img width="1722" height="234" alt="4 profile" src="https://github.com/user-attachments/assets/bc323ca6-89d3-4ad2-ada0-e5f1b3726a90" />
 
         - **Content**: The description of the analysis results including read depths, mutation rates, reactivity profile and so on. The detailed format and contents are as follows:
 
@@ -301,7 +301,7 @@ Here stands an throughout workflow of data analysis.
         |`Norm_stderr`              |  Standard error after normalization               |
 
         - **Application**: Show the analysis results, where visualizations of read depths, mutation rates, and reactivity profile can be viewed at `*_profiles.pdf` and `*_histograms.pdf`.
-<img width="1131" height="680" alt="5 profile histogram" src="https://github.com/user-attachments/assets/6e6c624e-89d2-424e-aac5-8d2d529858a7" />
+		<img width="1131" height="680" alt="5 profile histogram" src="https://github.com/user-attachments/assets/6e6c624e-89d2-424e-aac5-8d2d529858a7" />
 
       - **`*_mutation_counts.txt`**
 
@@ -342,7 +342,7 @@ Here stands an throughout workflow of data analysis.
         - **Content**: CT and Dot Bracket (.dbn) files encapsulate an RNA sequence and its predicted secondary structure. The CT file uses a table format, detailing the nucleotide sequence and the pairing partner for each position. The Dot Bracket format represents the structure more compactly using a string of symbols, where matching brackets denote base pairs.
         - **Application**: Served as the direct input for visualization tools that generate structure diagrams. The `*.svg` file can be viewed to see the graphical representation of the RNA secondary structure.​
 
-![6 structure](https://github.com/user-attachments/assets/3e393cb8-85a1-4c20-ad9d-e6462a47cc4e)
+		![6 structure](https://github.com/user-attachments/assets/3e393cb8-85a1-4c20-ad9d-e6462a47cc4e)
 	  
 # Part Ⅴ Reference
 [1] Busan S, Weeks KM. Accurate detection of chemical modifications in RNA by mutational profiling (MaP) with ShapeMapper 2. RNA. 2018, 24(2):143-148.
