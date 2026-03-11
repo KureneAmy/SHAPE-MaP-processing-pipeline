@@ -1,0 +1,41 @@
+# Sample configuration file for SHAPE-MaP pipeline
+samples:
+  GSE279192: 
+    modified:
+      R1 : "data/samples/SRR30943151_1.fastq.gz"
+      R2 : "data/samples/SRR30943151_2.fastq.gz"
+    untreated:
+      R1 : "data/samples/SRR30943152_1.fastq.gz"
+      R2 : "data/samples/SRR30943152_2.fastq.gz"
+
+output_dir: "output/"
+container: "shapemap.sif"
+# Target reference file
+target: "data/GSE279192_Hs_DRAIC.fa"
+target_name: "Hs_DRAIC_ncRNA"
+
+# ShapeMapper2 parameters
+denatured: false
+overwrite: true
+indiv_norm: false
+
+# Primer settings
+amplicon: true
+certain_primer: true
+primers_file: data/GSE279192_Hs_DRAIC_Amp_Primers.fa
+random_primer: false
+random_primer_length: 0
+
+# ShapeMapper2 parameters (delete to set default values)
+max_primer_offset: 10
+min_depth: 1000
+max_bg: 0.05
+min_qual_to_trim: 20
+window_to_trim: 5
+min_length_to_trim: 25
+min_qual_to_count: 30
+
+# RNAstructure parameters
+temperature: 37
+maximum: 20
+loop: 30
