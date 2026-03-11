@@ -266,19 +266,20 @@ Here stands an throughout workflow of data analysis.
    * **Output Interpretation**
 
       - **`*_shapemapper_log.txt`**
+        
 		<img width="642" height="751" alt="2 log" src="https://github.com/user-attachments/assets/e9603eb4-2cca-4d98-ab5d-d5cb556df11d" />
 
         - **Content**: Run progress and summary outputs. Includes mate pair merging stats, read alignment stats, reactivity profile quality control checks, and amplicon primer pair read depths.
         - **Application**: This is the first file you should check to assess the overall quality of your data.
 
       - **`*_mapped_depths.pdf`**
+        
 		<img width="1194" height="654" alt="3 mapped depth" src="https://github.com/user-attachments/assets/ce5f972d-45d4-48f2-8cb6-41410986c680" />
 
         - **Content**: Figures showing simple mapped read depths. Shows reads excluded due to low aligner-reported MAPQ (mapping quality score), and shows off-target reads excluded due to not aligning near expected amplicon primer pair locations. 
         - **Application**: Reads included in analysis are further broken down by primer pair.
 
       - **`*_profile.txt`**
-		<img width="1722" height="234" alt="4 profile" src="https://github.com/user-attachments/assets/bc323ca6-89d3-4ad2-ada0-e5f1b3726a90" />
 
         - **Content**: The description of the analysis results including read depths, mutation rates, reactivity profile and so on. The detailed format and contents are as follows:
 
@@ -301,7 +302,10 @@ Here stands an throughout workflow of data analysis.
         |`Norm_stderr`              |  Standard error after normalization               |
 
         - **Application**: Show the analysis results, where visualizations of read depths, mutation rates, and reactivity profile can be viewed at `*_profiles.pdf` and `*_histograms.pdf`.
-		<img width="1131" height="680" alt="5 profile histogram" src="https://github.com/user-attachments/assets/6e6c624e-89d2-424e-aac5-8d2d529858a7" />
+       
+          <img width="1722" height="234" alt="4 profile" src="https://github.com/user-attachments/assets/44d38d16-f1e1-416b-9580-e0f0d3ff27d7" />
+
+		  <img width="1131" height="680" alt="5 profile histogram" src="https://github.com/user-attachments/assets/f5c2e342-57da-451b-8fcb-213509a76903" />
 
       - **`*_mutation_counts.txt`**
 
@@ -312,18 +316,18 @@ Here stands an throughout workflow of data analysis.
 
         - **Content**: This is a log where each line represents a single mapped read. It catalogs essential alignment information, including read type, mapping coordinates, and classification (INCLUDED, LOW_MAPQ, OFF_TARGET). It encodes per-read nucleotide-level data through binary arrays for mapped coverage, effective depth, and identified mutation sites. Detailed mutation information and file format are as follows：
 
-        | Field                     |  Content                                          |
-        |---------------------------|---------------------------------------------------|
-        | 1 | read type (see below) |
-        | 2 | read name |
-        | 3 | 0-based leftmost mapping position (inclusive) |
-        | 4 | 0-based rightmost mapping position (inclusive) |
-        | 5 | read mapping category (see below)|
-        | 6 | primer pair index (0-based), <br> or -999 if no associated primers |
-        | 7 | mapped depth array (see below) |
-        | 8 | effective depth array (see below) |
-        | 9 | mutation count array (see below) |
-        | 10 | mutations (see below) |
+	        | Field                     |  Content                                          |
+	        |---------------------------|---------------------------------------------------|
+	        | 1 | read type (see below) |
+	        | 2 | read name |
+	        | 3 | 0-based leftmost mapping position (inclusive) |
+	        | 4 | 0-based rightmost mapping position (inclusive) |
+	        | 5 | read mapping category (see below)|
+	        | 6 | primer pair index (0-based), <br> or -999 if no associated primers |
+	        | 7 | mapped depth array (see below) |
+	        | 8 | effective depth array (see below) |
+	        | 9 | mutation count array (see below) |
+	        | 10 | mutations (see below) |
 
         - **Application**: This file serves as the primary data source for calculating mutation rates and profiling mutation patterns.  The detailed mutation records enable advanced analysis of mutation spectra, while the mapping categories facilitate quality control by distinguishing reads used in analysis from those excluded due to low quality or off-target alignment.
 
