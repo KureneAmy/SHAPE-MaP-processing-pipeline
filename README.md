@@ -190,6 +190,7 @@ Here stands an throughout workflow of data analysis.
       Here /mnt/zhangam/SHAPE_MaP/ represents the root directory.
 
         ```bash
+        cd /path/to/snakemake/file/
         snakemake -s SHAPE-MaP.smk \
 		      --cores 8 \
           --use-singularity \
