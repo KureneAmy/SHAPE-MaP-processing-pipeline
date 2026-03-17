@@ -118,19 +118,19 @@ Here stands an throughout workflow of data analysis.
 5.   **Required File Structure**
 
       ```bash
-      root/
-        ├── config.yaml
-        ├── data
-        │   ├── GSE279192_Hs_DRAIC_Amp_Primers.fa
-        │   ├── GSE279192_Hs_DRAIC.fa
-        │   └── samples
-        │       ├── SRR30943151_1.fastq.gz
-        │       ├── SRR30943151_2.fastq.gz
-        │       ├── SRR30943152_1.fastq.gz
-        │       └── SRR30943152_2.fastq.gz
-        ├── shapemap.sif
-      	├── split_reference.py
-        └── SHAPE-MaP.smk
+        root/
+            ├── config.yaml
+            ├── data
+            │   ├── GSE279192_Hs_DRAIC_Amp_Primers.fa
+            │   ├── GSE279192_Hs_DRAIC.fa
+            │   └── samples
+            │       ├── SRR30943151_1.fastq.gz
+            │       ├── SRR30943151_2.fastq.gz
+            │       ├── SRR30943152_1.fastq.gz
+            │       └── SRR30943152_2.fastq.gz
+            ├── shapemap.sif
+            ├── split_reference.py
+            └── SHAPE-MaP.smk
       ```
       
       - **SHAPE-MaP.smk** — The main Snakemake workflow script.  
@@ -276,33 +276,33 @@ Here stands an throughout workflow of data analysis.
 
    * **Output Structure**
       ```bash
-      output_dir/
-      	├── reference_split
-		│   ├── DNA
-		│   │   └── (DNA single-sequence fasta files)
-		│   └── RNA
-		│       └── (RNA single-sequence fasta files)
-		└── GSE279192
-		    ├── Hs_DRAIC_ncRNA
-		    │   ├── structure
-		    │   │   ├── GSE279192_Hs_DRAIC_ncRNA.ct
-		    │   │   ├── GSE279192_Hs_DRAIC_ncRNA.dbn
-		    │   │   └── GSE279192_Hs_DRAIC_ncRNA_folding.svg
-	        │   ├── GSE279192_Hs_DRAIC_ncRNA_histograms.pdf
-	        │   ├── GSE279192_Hs_DRAIC_ncRNA.map
-	        │   ├── GSE279192_Hs_DRAIC_ncRNA_mapped_depths.pdf
-	        │   ├── GSE279192_Hs_DRAIC_ncRNA_per-amplicon_abundance.txt
-	        │   ├── GSE279192_Hs_DRAIC_ncRNA_profiles.pdf
-	        │   ├── GSE279192_Hs_DRAIC_ncRNA_profile.txt
-	        │   ├── GSE279192_Hs_DRAIC_ncRNA_ribosketch_colors.txt
-	        │   ├── GSE279192_Hs_DRAIC_ncRNA.shape
-	        │   ├── GSE279192_Hs_DRAIC_ncRNA_varna_colors.txt
-	        │   ├── GSE279192_Modified_Hs_DRAIC_ncRNA_mutation_counts.txt
-	        │   ├── GSE279192_Modified_Hs_DRAIC_ncRNA_parsed.mut
-	        │   ├── GSE279192_Hs_DRAIC_ncRNA_shapemapper_log.txt
-	        │   ├── GSE279192_Untreated_Hs_DRAIC_ncRNA_mutation_counts.txt
-		    │   └── GSE279192_Untreated_Hs_DRAIC_ncRNA_parsed.mut
-		    └── (Other target sequences, if any exist)
+	    output_dir/
+	        ├── reference_split
+	        │   ├── DNA
+	        │   │   └── (DNA single-sequence fasta files)
+	        │   └── RNA
+	        │       └── (RNA single-sequence fasta files)
+	        └── GSE279192
+	            ├── Hs_DRAIC_ncRNA
+	            │   ├── structure
+	            │   │   ├── GSE279192_Hs_DRAIC_ncRNA.ct
+	            │   │   ├── GSE279192_Hs_DRAIC_ncRNA.dbn
+	            │   │   └── GSE279192_Hs_DRAIC_ncRNA_folding.svg
+	            │   ├── GSE279192_Hs_DRAIC_ncRNA_histograms.pdf
+	            │   ├── GSE279192_Hs_DRAIC_ncRNA.map
+	            │   ├── GSE279192_Hs_DRAIC_ncRNA_mapped_depths.pdf
+	            │   ├── GSE279192_Hs_DRAIC_ncRNA_per-amplicon_abundance.txt
+	            │   ├── GSE279192_Hs_DRAIC_ncRNA_profiles.pdf
+	            │   ├── GSE279192_Hs_DRAIC_ncRNA_profile.txt
+	            │   ├── GSE279192_Hs_DRAIC_ncRNA_ribosketch_colors.txt
+	            │   ├── GSE279192_Hs_DRAIC_ncRNA.shape
+	            │   ├── GSE279192_Hs_DRAIC_ncRNA_varna_colors.txt
+	            │   ├── GSE279192_Modified_Hs_DRAIC_ncRNA_mutation_counts.txt
+	            │   ├── GSE279192_Modified_Hs_DRAIC_ncRNA_parsed.mut
+	            │   ├── GSE279192_Hs_DRAIC_ncRNA_shapemapper_log.txt
+	            │   ├── GSE279192_Untreated_Hs_DRAIC_ncRNA_mutation_counts.txt
+	            │   └── GSE279192_Untreated_Hs_DRAIC_ncRNA_parsed.mut
+	            └── (Other target sequences, if any exist)
       ```
     
    * **Output Interpretation**
