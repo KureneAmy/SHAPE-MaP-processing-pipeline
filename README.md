@@ -95,18 +95,8 @@ Here stands an throughout workflow of data analysis.
     prefetch SRR30943152
 
     # Convert sra data to fastq data
-    fastq-dump --split-files SRR30943151\SRR30943151.sra
-    fastq-dump --split-files SRR30943152\SRR30943152.sra
-    
-    # Randomly sample fastq data
-    singularity exec ../../SPRITE.sif seqtk sample -s100 SRR30943151_1.fastq 53086 > SRR30943151_R1.fastq
-    singularity exec ../SPRITE.sif seqtk sample -s100 SRR30943151_2.fastq 53086 > SRR30943151_R2.fastq
-    singularity exec ../../SPRITE.sif seqtk sample -s100 SRR30943152_1.fastq 53086 > SRR30943152_R1.fastq
-    singularity exec ../SPRITE.sif seqtk sample -s100 SRR30943152_2.fastq 53086 > SRR30943152_R2.fastq
-    pigz -p 8 SRR30943151_R1.fastq
-    pigz -p 8 SRR30943151_R2.fastq
-    pigz -p 8 SRR30943152_R1.fastq
-    pigz -p 8 SRR30943152_R2.fastq
+    fastq-dump --gzip --split-files SRR30943151\SRR30943151.sra
+    fastq-dump --gzip --split-files SRR30943152\SRR30943152.sra
 
     # Download the target fasta file
     cd ../
