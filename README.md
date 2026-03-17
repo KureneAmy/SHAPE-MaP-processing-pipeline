@@ -115,7 +115,7 @@ Here stands an throughout workflow of data analysis.
     wget https://ftp.ncbi.nlm.nih.gov/geo/series/GSE279nnn/GSE279192/suppl/GSE279192%5FHs%5FDRAIC%5FAmp%5FPrimers.fa.gz
     ```
 
-7.   **Required File Structure**
+5.   **Required File Structure**
 
       ```bash
       root/
@@ -129,6 +129,7 @@ Here stands an throughout workflow of data analysis.
         │       ├── SRR30943152_1.fastq.gz
         │       └── SRR30943152_2.fastq.gz
         ├── shapemap.sif
+      	├── split_reference.py
         └── SHAPE-MaP.smk
       ```
       
@@ -136,6 +137,7 @@ Here stands an throughout workflow of data analysis.
       - **config.yaml** — Configuration file containing paths, parameters, and sample information.  
         ⚠️ Must be located in the same directory as `SHAPE-MaP.smk`.
       - **shapemap.sif** — Singularity container image with all required software and dependencies pre-installed.
+      - **split_reference.py** — A python script to split target fasta into single-sequence files.
 
 # Part III Running
 
@@ -144,20 +146,26 @@ Here stands an throughout workflow of data analysis.
       * **Step 1: Edit `config.yaml`**
 
         ```bash
+        # Please use ABSOLUTE PATH for all file paths
         # Sample configuration file for SHAPE-MaP pipeline
         samples:
           GSE279192: 
             modified:
-              R1 : "data/samples/SRR30943151_1.fastq.gz"
-              R2 : "data/samples/SRR30943151_2.fastq.gz"
+              R1 : "/mnt/zhangam/SHAPE_MaP/data/samples/SRR30943151_1.fastq.gz"
+              R2 : "/mnt/zhangam/SHAPE_MaP/data/samples/SRR30943151_2.fastq.gz"
             untreated:
-              R1 : "data/samples/SRR30943152_1.fastq.gz"
-              R2 : "data/samples/SRR30943152_2.fastq.gz"
-        output_dir: "output/"
-        container: "shapemap.sif"
+              R1 : "/mnt/zhangam/SHAPE_MaP/data/samples/SRR30943152_1.fastq.gz"
+              R2 : "/mnt/zhangam/SHAPE_MaP/data/samples/SRR30943152_2.fastq.gz"
+        # Output directory no "/" at the end
+        output_dir: "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/output"
+        container: "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/Container/shapemap.sif"
+
         # Target reference file
-        target: "data/GSE279192_Hs_DRAIC.fa"
-        target_name: "Hs_DRAIC_ncRNA"
+        target: "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/reference_2.fa"
+
+        # Script settings
+        scripts:
+        	split: "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/Scripts/split_reference.py"
 
         # ShapeMapper2 parameters
         denatured: false
@@ -167,7 +175,7 @@ Here stands an throughout workflow of data analysis.
         # Primer settings
         amplicon: true
         certain_primer: true
-        primers_file: data/GSE279192_Hs_DRAIC_Amp_Primers.fa
+        primers_file: /mnt/zhangam/SHAPE_MaP/data/GSE279192_Hs_DRAIC_Amp_Primers.fa
         random_primer: false
         random_primer_length: 0
 
@@ -186,7 +194,25 @@ Here stands an throughout workflow of data analysis.
         loop: 30
         ```
 
-      * **Step 2: run snakemake**
+	  * **Step 2: Dry-run and dag-make**
+      Here /mnt/zhangam/SHAPE_MaP/ represents the root directory.
+
+		```bash
+    	# Dry-run
+        snakemake -np \
+          -s SHAPE-MaP.smk \
+          --use-singularity \
+          --singularity-args "--bind /mnt/zhangam/SHAPE_MaP/"
+
+		# Dag-make
+		snakemake -s SHAPE-MaP.smk \
+		          --use-singularity \
+		          --singularity-args "--bind /mnt/zhangam/SHAPE_MaP/" \
+		          --dag  | \
+		dot -Tsvg > dag.svg
+        ```
+	  Please try dry-run and dag-make first to check pipeline usability and generate flow diagram.
+      * **Step 3: run snakemake**
       Here /mnt/zhangam/SHAPE_MaP/ represents the root directory.
 
         ```bash
@@ -194,7 +220,7 @@ Here stands an throughout workflow of data analysis.
         snakemake -s SHAPE-MaP.smk \
 		      --cores 8 \
           --use-singularity \
-          --singularity-args "--bind /mnt/zhangam/SHAPE_MaP/:/root/"
+          --singularity-args "--bind /mnt/zhangam/SHAPE_MaP/"
         ```
       
    * **Command Parameters**
@@ -206,8 +232,10 @@ Here stands an throughout workflow of data analysis.
 
       - `container`:(required) Path to the Singularity container image (`shapemap.sif`) containing all required software and dependencies.
 
-      - `target`:(required) FASTA file containing the target DNA sequences. Lowercase positions will be excluded from reactivity profile, and should be used to indicate primer-binding sites if using directed primers. If multiple primer pairs were used, set `certain_primer` as "true" and provide the primer sequences in a separate file with `primers_file`.
-
+      - `target`:(required) FASTA file containing the target DNA or RNA sequences. Lowercase positions will be excluded from reactivity profile, and should be used to indicate primer-binding sites if using directed primers. If multiple primer pairs were used, set `certain_primer` as "true" and provide the primer sequences in a separate file with `primers_file`.
+    
+      - `scripts`:(required) The absolute path of the script "split_reference.py".The single-sequence results will be saved in `output_dir`/reference_split.
+        
       - `overwrite`:(optional) Overwrite existing files in output and temporary file folders without warning. Default: false.
 
       - `indiv_norm`:(optional) Normalize multiple reactivity profiles individually, instead of as a group. Default: false.
@@ -242,31 +270,39 @@ Here stands an throughout workflow of data analysis.
       - `--use-singularity`: Enables execution of rules within a Singularity container to ensure a fully reproducible environment.
       - `--singularity-args`: Allows passing additional arguments to the Singularity runtime (e.g., `--bind`, `--nv`, or custom options).
       - `--cores`: Specifies the maximum number of CPU cores (threads) that Snakemake can use in parallel when executing workflow rules.
-      - `--bind`: Specifies the directories to be mounted within the Singularity container. Include all required paths such as raw data, scripts, container images, and references. The format is `/project_directory:/project_directory`. Multiple directories can be mounted by separating them with commas, for example: `/path1:/path1,/path2:/path2`. If you're setting `/project_directory:/root/`, note that the path in the config file must be set as a relative path to `/project_directory`.(e.g., `./data` in `config.yaml` means `/project_directory/data`.)(required)
+      - `--bind`: Specifies the directories to be mounted within the Singularity container. Include all required paths such as raw data, scripts, container images, and references. The format is `/project_directory:/project_directory`. Multiple directories can be mounted by separating them with commas, for example: `/path1:/path1,/path2:/path2`. If you're setting `-- bind /project_directory/`, note that the path in the config file must be set as ABSOLUTE PATH and make sure that all the files you need are included in `/project_directory`. (required)
 
 # Part IV Output
 
    * **Output Structure**
       ```bash
-      GSE279192_out/
-        ├── GSE279192_Hs_DRAIC_ncRNA_histograms.pdf
-        ├── GSE279192_Hs_DRAIC_ncRNA.map
-        ├── GSE279192_Hs_DRAIC_ncRNA_mapped_depths.pdf
-        ├── GSE279192_Hs_DRAIC_ncRNA_per-amplicon_abundance.txt
-        ├── GSE279192_Hs_DRAIC_ncRNA_profiles.pdf
-        ├── GSE279192_Hs_DRAIC_ncRNA_profile.txt
-        ├── GSE279192_Hs_DRAIC_ncRNA_ribosketch_colors.txt
-        ├── GSE279192_Hs_DRAIC_ncRNA.shape
-        ├── GSE279192_Hs_DRAIC_ncRNA_varna_colors.txt
-        ├── GSE279192_Modified_Hs_DRAIC_ncRNA_mutation_counts.txt
-        ├── GSE279192_Modified_Hs_DRAIC_ncRNA_parsed.mut
-        ├── GSE279192_shapemapper_log.txt
-        ├── GSE279192_Untreated_Hs_DRAIC_ncRNA_mutation_counts.txt
-        ├── GSE279192_Untreated_Hs_DRAIC_ncRNA_parsed.mut
-        └── structure
-            ├── GSE279192_Hs_DRAIC_ncRNA.ct
-            ├── GSE279192_Hs_DRAIC_ncRNA.dbn
-            └── GSE279192_Hs_DRAIC_ncRNA_folding.svg
+      output_dir/
+      	├── reference_split
+		│   ├── DNA
+		│   │   └── (DNA single-sequence fasta files)
+		│   └── RNA
+		│       └── (RNA single-sequence fasta files)
+		└── GSE279192
+		    ├── Hs_DRAIC_ncRNA
+		    │   ├── structure
+		    │   │   ├── GSE279192_Hs_DRAIC_ncRNA.ct
+		    │   │   ├── GSE279192_Hs_DRAIC_ncRNA.dbn
+		    │   │   └── GSE279192_Hs_DRAIC_ncRNA_folding.svg
+	        │   ├── GSE279192_Hs_DRAIC_ncRNA_histograms.pdf
+	        │   ├── GSE279192_Hs_DRAIC_ncRNA.map
+	        │   ├── GSE279192_Hs_DRAIC_ncRNA_mapped_depths.pdf
+	        │   ├── GSE279192_Hs_DRAIC_ncRNA_per-amplicon_abundance.txt
+	        │   ├── GSE279192_Hs_DRAIC_ncRNA_profiles.pdf
+	        │   ├── GSE279192_Hs_DRAIC_ncRNA_profile.txt
+	        │   ├── GSE279192_Hs_DRAIC_ncRNA_ribosketch_colors.txt
+	        │   ├── GSE279192_Hs_DRAIC_ncRNA.shape
+	        │   ├── GSE279192_Hs_DRAIC_ncRNA_varna_colors.txt
+	        │   ├── GSE279192_Modified_Hs_DRAIC_ncRNA_mutation_counts.txt
+	        │   ├── GSE279192_Modified_Hs_DRAIC_ncRNA_parsed.mut
+	        │   ├── GSE279192_Hs_DRAIC_ncRNA_shapemapper_log.txt
+	        │   ├── GSE279192_Untreated_Hs_DRAIC_ncRNA_mutation_counts.txt
+		    │   └── GSE279192_Untreated_Hs_DRAIC_ncRNA_parsed.mut
+		    └── (Other target sequences, if any exist)
       ```
     
    * **Output Interpretation**
