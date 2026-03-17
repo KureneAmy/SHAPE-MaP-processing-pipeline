@@ -308,9 +308,9 @@ Here stands an throughout workflow of data analysis.
 
         - **General Statistics**: A combined table summarizing important metrics for each sample.
 
-		
+			
 
-        - **FastQC**: Quality-control metrics on raw and trimmed reads
+        - **FastQC**: Quality-control metrics on raw and trimmed reads.
      
      	
 
