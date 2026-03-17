@@ -267,6 +267,13 @@ Here stands an throughout workflow of data analysis.
    * **Output Structure**
       ```bash
 	    output_dir/
+      		├── multiqc_data
+      		├── multiqc_report.html
+    		├── qc
+	        │   ├── modified
+	        │   │   └── (modified group raw qc)
+      		│   └── untreated
+	        │       └── (untreated group raw qc)
 	        ├── reference_split
 	        │   ├── DNA
 	        │   │   └── (DNA single-sequence fasta files)
@@ -296,6 +303,16 @@ Here stands an throughout workflow of data analysis.
       ```
     
    * **Output Interpretation**
+     
+	  - **`multiqc_report.html`**: Open multiqc_report.html in a web browser to explore all sections interactively.
+
+        - **General Statistics**: A combined table summarizing important metrics for each sample.
+
+		
+
+        - **FastQC**: Quality-control metrics on raw and trimmed reads
+     
+     	
 
       - **`*_shapemapper_log.txt`**
         
