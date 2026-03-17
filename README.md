@@ -147,15 +147,15 @@ Here stands an throughout workflow of data analysis.
               R1 : "/mnt/zhangam/SHAPE_MaP/data/samples/SRR30943152_1.fastq.gz"
               R2 : "/mnt/zhangam/SHAPE_MaP/data/samples/SRR30943152_2.fastq.gz"
         # Output directory no "/" at the end
-        output_dir: "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/output"
-        container: "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/Container/shapemap.sif"
+        output_dir: "/mnt/zhangam/SHAPE_MaP/output"
+        container: "/mnt/zhangam/SHAPE_MaP/shapemap.sif"
 
         # Target reference file
-        target: "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/reference_2.fa"
+        target: "/mnt/zhangam/SHAPE_MaP/data/GSE279192_Hs_DRAIC.fa"
 
         # Script settings
         scripts:
-        	split: "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/Scripts/split_reference.py"
+        	split: "/mnt/zhangam/SHAPE_MaP/split_reference.py"
 
         # ShapeMapper2 parameters
         denatured: false
