@@ -184,7 +184,7 @@ Here stands an throughout workflow of data analysis.
         loop: 30
         ```
 
-		Please note the primer settings. If certain_primer is used, please set as follows:
+		Please note the primer settings. If `certain_primer` is used, please set as follows:
 
 	  	```bash
    		# Primer settings
@@ -196,7 +196,7 @@ Here stands an throughout workflow of data analysis.
         max_primer_offset:  (set based on facts)
     	```
 
-		If random_primer is used, please set as follows:
+		If `random_primer` is used, please set as follows:
 
 	  	```bash
    		# Primer settings
