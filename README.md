@@ -168,9 +168,9 @@ Here stands an throughout workflow of data analysis.
         primers_file: /mnt/zhangam/SHAPE_MaP/data/GSE279192_Hs_DRAIC_Amp_Primers.fa
         random_primer: false
         random_primer_length: 0
+        max_primer_offset: 10
 
         # ShapeMapper2 parameters (delete to set default values)
-        max_primer_offset: 10
         min_depth: 1000
         max_bg: 0.05
         min_qual_to_trim: 20
@@ -183,6 +183,30 @@ Here stands an throughout workflow of data analysis.
         maximum: 20
         loop: 30
         ```
+
+	  Please note the primer settings. If certain_primer is used, please set as follows:
+
+	  	```bash
+   		# Primer settings
+   		amplicon: (set based on facts)
+        certain_primer: true
+        primers_file: /absolute/path/to/primers/file
+        random_primer: false
+        random_primer_length: (will not be read)
+        max_primer_offset:  (set based on facts)
+    	```
+
+	  If random_primer is used, please set as follows:
+
+	  	```bash
+   		# Primer settings
+   		amplicon: false
+        certain_primer: false
+        primers_file: (will not be read)
+        random_primer: true
+        random_primer_length: (set based on facts)
+        max_primer_offset: (will not be read) 
+    	```
 
 	  * **Step 2: Dry-run and dag-make**
       Here /mnt/zhangam/SHAPE_MaP/ represents the root directory.
@@ -202,6 +226,7 @@ Here stands an throughout workflow of data analysis.
 		dot -Tsvg > dag.svg
         ```
 	  Please try dry-run and dag-make first to check pipeline usability and generate flow diagram.
+
       * **Step 3: run snakemake**
       Here /mnt/zhangam/SHAPE_MaP/ represents the root directory.
 
@@ -230,7 +255,7 @@ Here stands an throughout workflow of data analysis.
 
       - `indiv_norm`:(optional) Normalize multiple reactivity profiles individually, instead of as a group. Default: false.
 
-      - `amplicon`:(optional) Require reads to align near expected primer pair locations, and intelligently trim primer sites. If a single pair of primers on the ends of the RNA sequence is used, simply set primer sequences to lowercase in the `target` fasta file. If multiple pairs or internal locations are needed, set `certain_primer` as "true" and specify primers with a `primers_file`.
+      - `amplicon`:(optional) Require reads to align near expected primer pair locations, and intelligently trim primer sites. If multiple pairs or internal locations are needed, set `certain_primer` as "true" and specify primers with a `primers_file`.
 
       - `primers_file`:(optional) Amplicon primer pair sequences. Each line should contain a pair of primer sequences: the forward primer first followed by the reverse primer, separated by whitespace. To specify primers for multiple RNAs, add a line with each RNA name preceded by '>' before each group of primer pairs. RNA names must match those in any provided .fa files. If a primer file is needed, `certain_primer` must be set to "true"; otherwise, the primer file will not be read.
 
@@ -265,7 +290,7 @@ Here stands an throughout workflow of data analysis.
 # Part IV Output
 
    * **Output Structure**
-     ```
+     ```bash
 		output_dir/
 		    ├── multiqc_data
 		    ├── multiqc_report.html
