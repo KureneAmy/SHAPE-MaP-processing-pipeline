@@ -265,6 +265,7 @@ Here stands an throughout workflow of data analysis.
 # Part IV Output
 
    * **Output Structure**
+     ```
 		output_dir/
 		    ├── multiqc_data
 		    ├── multiqc_report.html
