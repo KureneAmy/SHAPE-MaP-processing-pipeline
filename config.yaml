@@ -1,0 +1,47 @@
+# Please use ABSOLUTE PATH for all file paths
+# Sample configuration file for SHAPE-MaP pipeline
+samples:
+  test: 
+    modified:
+      R1 : "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/samples/SRR28856494_R1.fastq.gz"
+      R2 : "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/samples/SRR28856494_R2.fastq.gz"
+    untreated:
+      R1 : "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/samples/SRR28856575_R1.fastq.gz"
+      R2 : "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/samples/SRR28856575_R2.fastq.gz"
+
+# Output directory no "/" at the end
+output_dir: "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/output"
+container: "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/Container/shapemap.sif"
+
+# Target reference file
+target: "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/reference_2.fa"
+
+# Script settings
+scripts:
+  split: "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/Scripts/split_reference.py"
+
+# ShapeMapper2 parameters
+denatured: false
+overwrite: true
+indiv_norm: false
+
+# Primer settings
+amplicon: false
+certain_primer: false
+primers_file: 0
+random_primer: true
+random_primer_length: 6
+max_primer_offset: 10
+
+# ShapeMapper2 parameters (delete to set default values)
+min_depth: 1000
+max_bg: 0.05
+min_qual_to_trim: 20
+window_to_trim: 5
+min_length_to_trim: 25
+min_qual_to_count: 30
+
+# RNAstructure parameters
+temperature: 37
+maximum: 20
+loop: 30
