@@ -45,3 +45,13 @@ min_qual_to_count: 30
 temperature: 37
 maximum: 20
 loop: 30
+
+# Report generation settings
+report_config:
+  generate_html: true
+  generate_markdown: true
+  report_title: "SHAPE-MaP Analysis Report"
+  institution: "Your Institution"
+  pi_name: ""
+  project_id: ""
+  analysis_date: ""
