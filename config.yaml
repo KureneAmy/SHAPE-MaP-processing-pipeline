@@ -3,22 +3,23 @@
 samples:
   test: 
     modified:
-      R1 : "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/samples/SRR28856494_R1.fastq.gz"
-      R2 : "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/samples/SRR28856494_R2.fastq.gz"
+      R1 : "/mnt1/4.NAS2025/zhangam/easyomics_test/report/SHAPE-MaP/Test_Files/samples/SRR30943151_1.fastq.gz"
+      R2 : "/mnt1/4.NAS2025/zhangam/easyomics_test/report/SHAPE-MaP/Test_Files/samples/SRR30943151_2.fastq.gz"
     untreated:
-      R1 : "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/samples/SRR28856575_R1.fastq.gz"
-      R2 : "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/samples/SRR28856575_R2.fastq.gz"
+      R1 : "/mnt1/4.NAS2025/zhangam/easyomics_test/report/SHAPE-MaP/Test_Files/samples/SRR30943152_1.fastq.gz"
+      R2 : "/mnt1/4.NAS2025/zhangam/easyomics_test/report/SHAPE-MaP/Test_Files/samples/SRR30943152_2.fastq.gz"
 
 # Output directory no "/" at the end
-output_dir: "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/output"
-container: "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/Container/shapemap.sif"
+output_dir: "/mnt1/4.NAS2025/zhangam/easyomics_test/report/SHAPE-MaP/output"
+container: "/mnt1/4.NAS2025/zhangam/easyomics_test/report/SHAPE-MaP/shapemap.sif"
 
 # Target reference file
-target: "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/reference_2.fa"
+target: "/mnt1/4.NAS2025/zhangam/easyomics_test/report/SHAPE-MaP/GSE279192_Hs_DRAIC.fa"
 
 # Script settings
 scripts:
-  split: "/mnt1/2.NAS2024/wutan/9.pipe/pack/test/Scripts/split_reference.py"
+  split: "/mnt1/4.NAS2025/zhangam/easyomics_test/report/SHAPE-MaP/split_reference.py"
+  compile_report: "/mnt1/4.NAS2025/zhangam/easyomics_test/report/SHAPE-MaP/compile_report.py"
 
 # ShapeMapper2 parameters
 denatured: false
@@ -45,3 +46,15 @@ min_qual_to_count: 30
 temperature: 37
 maximum: 20
 loop: 30
+
+# Report generation settings
+report_config:
+  generate_html: true
+  html_template: "/mnt1/4.NAS2025/zhangam/easyomics_test/report/SHAPE-MaP/SHAPE-MaP_Report.html"
+  generate_markdown: true
+  markdown_template: "/mnt1/4.NAS2025/zhangam/easyomics_test/report/SHAPE-MaP/SHAPE-MaP_Report.md"
+  report_title: "SHAPE-MaP Analysis Report"
+  institution: "BIG"
+  pi_name: "HYJ"
+  project_id: "report-test"
+  analysis_date: "2026/04/07"

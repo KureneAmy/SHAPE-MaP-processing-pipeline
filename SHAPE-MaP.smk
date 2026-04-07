@@ -28,6 +28,9 @@ rule all:
         expand("{output_dir}/{sample}/{seq_name}/structure/{sample}_{seq_name}.ct", sample=config["samples"], output_dir=config["output_dir"], seq_name=ALL_SEQ_NAMES),
         expand("{output_dir}/{sample}/{seq_name}/structure/{sample}_{seq_name}_folding.svg", sample=config["samples"], output_dir=config["output_dir"], seq_name=ALL_SEQ_NAMES),
         expand("{output_dir}/multiqc_report.html", output_dir=config["output_dir"]),
+        os.path.join(config["output_dir"], "reports", "report_data.json"),
+        os.path.join(config["output_dir"], "reports", "SHAPE-MaP_Analysis_Report.html"),
+        os.path.join(config["output_dir"], "reports", "SHAPE-MaP_Analysis_Report.md"),
 
 
 rule split_reference_sequences:
@@ -42,8 +45,10 @@ rule split_reference_sequences:
         script = config["scripts"]["split"]
     container:
         config["container"]
+    log:
+        os.path.join(config["output_dir"], "logs", "split_reference_sequences.log")
     shell:
-        "python {params.script} -i {input.target} -d {output.dna_dir} -r {output.rna_dir} --overwrite"
+        "python {params.script} -i {input.target} -d {output.dna_dir} -r {output.rna_dir} --overwrite > {log} 2>&1"
 
 
 rule qc_modified:
@@ -56,12 +61,14 @@ rule qc_modified:
         threads = 8
     container:
         config["container"]
+    log:
+        os.path.join(config["output_dir"], "logs", "qc_modified_{sample}.log")
     shell:
         """
         output_dir=$(dirname {output.html_R1})
         mkdir -p "$output_dir"
         
-        fastqc -t {params.threads} {params.FQ1} {params.FQ2} -o "$output_dir"
+        fastqc -t {params.threads} {params.FQ1} {params.FQ2} -o "$output_dir" > {log} 2>&1
         
         base_fq1=$(basename {params.FQ1})
         base_fq1_noext="${{base_fq1%.*}}"
@@ -85,12 +92,14 @@ rule qc_untreated:
         threads = 8
     container:
         config["container"]
+    log:
+        os.path.join(config["output_dir"], "logs", "qc_untreated_{sample}.log")
     shell:
         """
         output_dir=$(dirname {output.html_R1})
         mkdir -p "$output_dir"
         
-        fastqc -t {params.threads} {params.FQ1} {params.FQ2} -o "$output_dir"
+        fastqc -t {params.threads} {params.FQ1} {params.FQ2} -o "$output_dir" > {log} 2>&1
         
         base_fq1=$(basename {params.FQ1})
         base_fq1_noext="${{base_fq1%.*}}"
@@ -115,12 +124,14 @@ if config.get("denatured"):
             threads = 8
         container:
             config["container"]
+        log:
+            os.path.join(config["output_dir"], "logs", "qc_denatured_{sample}.log")
         shell:
             """
             output_dir=$(dirname {output.html_R1})
             mkdir -p "$output_dir"
             
-            fastqc -t {params.threads} {params.FQ1} {params.FQ2} -o "$output_dir"
+            fastqc -t {params.threads} {params.FQ1} {params.FQ2} -o "$output_dir" > {log} 2>&1
             
             base_fq1=$(basename {params.FQ1})
             base_fq1_noext="${{base_fq1%.*}}"
@@ -187,16 +198,18 @@ rule run_shapemapper:
         untreated_R1 = lambda wildcards: config["samples"][wildcards.sample]["untreated"]["R1"],
         untreated_R2 = lambda wildcards: config["samples"][wildcards.sample]["untreated"]["R2"],
     output:
-        shape = "{output_dir}/{sample}/{seq_name}/{sample}_{seq_name}.shape",
-        profile = "{output_dir}/{sample}/{seq_name}/{sample}_{seq_name}_profiles.pdf",
-        log = "{output_dir}/{sample}/{seq_name}/{sample}_{seq_name}_shapemapper_log.txt",
+        shape = os.path.join(config["output_dir"], "{sample}", "{seq_name}", "{sample}_{seq_name}.shape"),
+        profile = os.path.join(config["output_dir"], "{sample}", "{seq_name}", "{sample}_{seq_name}_profiles.pdf"),
+        log = os.path.join(config["output_dir"], "{sample}", "{seq_name}", "{sample}_{seq_name}_shapemapper_log.txt"),
     params:
         cmd_params = get_shapemapper_params,
     threads: 8
     container:
         config["container"]
+    log:
+        os.path.join(config["output_dir"], "logs", "shapemapper_{sample}_{seq_name}.log")
     shell:
-        "shapemapper {params.cmd_params}"
+        "shapemapper {params.cmd_params} > {log} 2>&1"
 
 def get_rnastructure_params(wildcards): 
     params = []
@@ -210,40 +223,46 @@ def get_rnastructure_params(wildcards):
 
 rule predict_structure:
     input:
-        shape = "{output_dir}/{sample}/{seq_name}/{sample}_{seq_name}.shape",
+        shape = os.path.join(config["output_dir"], "{sample}", "{seq_name}", "{sample}_{seq_name}.shape"),
         sequence = lambda wildcards: os.path.join(SPLIT_RNA_DIR, f"{wildcards.seq_name}.fa"),
     output:
-        ct = "{output_dir}/{sample}/{seq_name}/structure/{sample}_{seq_name}.ct",
+        ct = os.path.join(config["output_dir"], "{sample}", "{seq_name}", "structure", "{sample}_{seq_name}.ct"),
     params:
         program_params = get_rnastructure_params
     container:
         config["container"]
+    log:
+        os.path.join(config["output_dir"], "logs", "rnastructure_{sample}_{seq_name}_ct.log")
     shell:
-        "Fold --SHAPE {input.shape} {input.sequence} {output.ct} {params.program_params}"
+        "Fold --SHAPE {input.shape} {input.sequence} {output.ct} {params.program_params} > {log} 2>&1"
 
 rule predict_structure_dbn:
     input:
-        shape = "{output_dir}/{sample}/{seq_name}/{sample}_{seq_name}.shape",
+        shape = os.path.join(config["output_dir"], "{sample}", "{seq_name}", "{sample}_{seq_name}.shape"),
         sequence = lambda wildcards: os.path.join(SPLIT_RNA_DIR, f"{wildcards.seq_name}.fa"),
     output:
-        dbn = "{output_dir}/{sample}/{seq_name}/structure/{sample}_{seq_name}.dbn",
+        dbn = os.path.join(config["output_dir"], "{sample}", "{seq_name}", "structure", "{sample}_{seq_name}.dbn"),
     params:
         program_params = get_rnastructure_params
     container:
         config["container"]
+    log:
+        os.path.join(config["output_dir"], "logs", "rnastructure_{sample}_{seq_name}_dbn.log")
     shell:
-        "Fold --SHAPE {input.shape} -k {input.sequence} {output.dbn} {params.program_params}"
+        "Fold --SHAPE {input.shape} -k {input.sequence} {output.dbn} {params.program_params} > {log} 2>&1"
 
 rule visualize_structure:
     input:
-        shape = "{output_dir}/{sample}/{seq_name}/{sample}_{seq_name}.shape",
-        ct = "{output_dir}/{sample}/{seq_name}/structure/{sample}_{seq_name}.ct",
+        shape = os.path.join(config["output_dir"], "{sample}", "{seq_name}", "{sample}_{seq_name}.shape"),
+        ct = os.path.join(config["output_dir"], "{sample}", "{seq_name}", "structure", "{sample}_{seq_name}.ct"),
     output:
-        svg = "{output_dir}/{sample}/{seq_name}/structure/{sample}_{seq_name}_folding.svg",
+        svg = os.path.join(config["output_dir"], "{sample}", "{seq_name}", "structure", "{sample}_{seq_name}_folding.svg"),
     container:
         config["container"]
+    log:
+        os.path.join(config["output_dir"], "logs", "visualize_structure_{sample}_{seq_name}.log")
     shell:
-        "draw --SHAPE {input.shape} --svg -n 1 {input.ct} {output.svg}"
+        "draw --SHAPE {input.shape} --svg -n 1 {input.ct} {output.svg} > {log} 2>&1"
 
 
 def get_all_fastqc_outputs(wildcards):
@@ -288,7 +307,81 @@ rule multiqc:
         analysis_dir = config["output_dir"]
     container:
         config["container"]
+    log:
+        os.path.join(config["output_dir"], "logs", "multiqc.log")
     shell:
         """
-        multiqc {params.analysis_dir} -o {params.analysis_dir} --force
+        multiqc {params.analysis_dir} -o {params.analysis_dir} --force > {log} 2>&1
+        """
+
+REPORT_CONFIG_FILE = workflow.configfiles[0] if workflow.configfiles else "config.yaml"
+
+rule collect_report_stats:
+    input:
+        multiqc = os.path.join(config["output_dir"], "multiqc_report.html"),
+        svg = expand(
+            os.path.join(config["output_dir"], "{sample}", "{seq_name}", "structure", "{sample}_{seq_name}_folding.svg"),
+            sample=config["samples"],
+            seq_name=ALL_SEQ_NAMES,
+        ),
+    output:
+        json = os.path.join(config["output_dir"], "reports", "report_data.json"),
+    params:
+        config_file = REPORT_CONFIG_FILE,
+        script = config["scripts"]["compile_report"],
+        reports_dir = os.path.join(config["output_dir"], "reports"),
+    log:
+        os.path.join(config["output_dir"], "logs", "compile_report_stats.log"),
+    shell:
+        """
+        python {params.script} \
+            --config {params.config_file} \
+            --output-dir {params.reports_dir} \
+            --stats-json {output.json} \
+            --no-html \
+            --no-markdown > {log} 2>&1
+        """
+
+
+rule generate_html_report:
+    input:
+        json = os.path.join(config["output_dir"], "reports", "report_data.json"),
+        template = config["report_config"]["html_template"],
+    output:
+        html = os.path.join(config["output_dir"], "reports", "SHAPE-MaP_Analysis_Report.html"),
+    params:
+        config_file = REPORT_CONFIG_FILE,
+        script = config["scripts"]["compile_report"],
+        reports_dir = os.path.join(config["output_dir"], "reports"),
+    log:
+        os.path.join(config["output_dir"], "logs", "compile_report_html.log"),
+    shell:
+        """
+        python {params.script} \
+            --config {params.config_file} \
+            --output-dir {params.reports_dir} \
+            --html-template {input.template} \
+            --no-markdown > {log} 2>&1
+        """
+
+
+rule generate_markdown_report:
+    input:
+        json = os.path.join(config["output_dir"], "reports", "report_data.json"),
+        template = config["report_config"]["markdown_template"],
+    output:
+        md = os.path.join(config["output_dir"], "reports", "SHAPE-MaP_Analysis_Report.md"),
+    params:
+        config_file = REPORT_CONFIG_FILE,
+        script = config["scripts"]["compile_report"],
+        reports_dir = os.path.join(config["output_dir"], "reports"),
+    log:
+        os.path.join(config["output_dir"], "logs", "compile_report_markdown.log"),
+    shell:
+        """
+        python {params.script} \
+            --config {params.config_file} \
+            --output-dir {params.reports_dir} \
+            --md-template {input.template} \
+            --no-html > {log} 2>&1
         """
