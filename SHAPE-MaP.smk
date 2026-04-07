@@ -28,6 +28,9 @@ rule all:
         expand("{output_dir}/{sample}/{seq_name}/structure/{sample}_{seq_name}.ct", sample=config["samples"], output_dir=config["output_dir"], seq_name=ALL_SEQ_NAMES),
         expand("{output_dir}/{sample}/{seq_name}/structure/{sample}_{seq_name}_folding.svg", sample=config["samples"], output_dir=config["output_dir"], seq_name=ALL_SEQ_NAMES),
         expand("{output_dir}/multiqc_report.html", output_dir=config["output_dir"]),
+        os.path.join(config["output_dir"], "reports", "report_data.json"),
+        os.path.join(config["output_dir"], "reports", "SHAPE-MaP_Analysis_Report.html"),
+        os.path.join(config["output_dir"], "reports", "SHAPE-MaP_Analysis_Report.md"),
 
 
 rule split_reference_sequences:
@@ -291,4 +294,86 @@ rule multiqc:
     shell:
         """
         multiqc {params.analysis_dir} -o {params.analysis_dir} --force
+        """
+
+
+def get_all_shapemapper_outputs(wildcards):
+    """Return all ShapeMapper log and profile files for report statistics."""
+    all_files = []
+    for sample in config["samples"]:
+        for seq_name in ALL_SEQ_NAMES:
+            log_path = os.path.join(
+                config["output_dir"], sample, seq_name,
+                f"{sample}_{seq_name}_shapemapper_log.txt"
+            )
+            shape_path = os.path.join(
+                config["output_dir"], sample, seq_name,
+                f"{sample}_{seq_name}.shape"
+            )
+            all_files.extend([log_path, shape_path])
+    return all_files
+
+
+PIPELINE_DIR = os.path.dirname(workflow.snakefile)
+REPORT_CONFIG_FILE = workflow.configfiles[0] if workflow.configfiles else "config.yaml"
+
+
+rule collect_report_stats:
+    input:
+        multiqc = os.path.join(config["output_dir"], "multiqc_report.html"),
+        shapemapper_files = get_all_shapemapper_outputs,
+    output:
+        json = os.path.join(config["output_dir"], "reports", "report_data.json"),
+    params:
+        config_file = REPORT_CONFIG_FILE,
+        script = os.path.join(PIPELINE_DIR, "scripts", "compile_report.py"),
+        reports_dir = os.path.join(config["output_dir"], "reports"),
+    shell:
+        """
+        python {params.script} \
+            --config {params.config_file} \
+            --output-dir {params.reports_dir} \
+            --stats-json {output.json} \
+            --no-html \
+            --no-markdown
+        """
+
+
+rule generate_html_report:
+    input:
+        json = os.path.join(config["output_dir"], "reports", "report_data.json"),
+        template = os.path.join(PIPELINE_DIR, "templates", "SHAPE-MaP_Report.html"),
+    output:
+        html = os.path.join(config["output_dir"], "reports", "SHAPE-MaP_Analysis_Report.html"),
+    params:
+        config_file = REPORT_CONFIG_FILE,
+        script = os.path.join(PIPELINE_DIR, "scripts", "compile_report.py"),
+        reports_dir = os.path.join(config["output_dir"], "reports"),
+    shell:
+        """
+        python {params.script} \
+            --config {params.config_file} \
+            --output-dir {params.reports_dir} \
+            --html-template {input.template} \
+            --no-markdown
+        """
+
+
+rule generate_markdown_report:
+    input:
+        json = os.path.join(config["output_dir"], "reports", "report_data.json"),
+        template = os.path.join(PIPELINE_DIR, "templates", "SHAPE-MaP_Report.md"),
+    output:
+        md = os.path.join(config["output_dir"], "reports", "SHAPE-MaP_Analysis_Report.md"),
+    params:
+        config_file = REPORT_CONFIG_FILE,
+        script = os.path.join(PIPELINE_DIR, "scripts", "compile_report.py"),
+        reports_dir = os.path.join(config["output_dir"], "reports"),
+    shell:
+        """
+        python {params.script} \
+            --config {params.config_file} \
+            --output-dir {params.reports_dir} \
+            --md-template {input.template} \
+            --no-html
         """
