@@ -17,6 +17,7 @@ import re
 import statistics as _stats
 import sys
 from datetime import datetime
+import math
 
 import yaml
 
@@ -51,7 +52,6 @@ def _safe_int(value, default=None):
 # ---------------------------------------------------------------------------
 # Parsers
 # ---------------------------------------------------------------------------
-
 def parse_shapemapper_log(log_path):
     """
     Parse a ShapeMapper2 log file and return a dictionary of statistics.
@@ -245,7 +245,7 @@ def parse_profile_txt(profile_txt_path):
         for row in rows:
             if idx < len(row):
                 v = _safe_float(row[idx])
-                if v is not None and v != -999.0:
+                if v is not None and v != -999.0 and not math.isnan(v) and not math.isinf(v):
                     vals.append(v)
         return vals
 
@@ -459,7 +459,6 @@ def collect_all_stats(config):
 # ---------------------------------------------------------------------------
 # Template rendering
 # ---------------------------------------------------------------------------
-
 def _fmt_number(value, decimals=2):
     """Format a numeric value for display in reports.
 
@@ -536,7 +535,6 @@ def render_markdown_report(data, template_path, output_path):
 # ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
-
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Generate SHAPE-MaP analysis reports (HTML and Markdown).",
@@ -589,7 +587,6 @@ def parse_args():
         help="Enable debug logging.",
     )
     return parser.parse_args()
-
 
 def main():
     args = parse_args()
