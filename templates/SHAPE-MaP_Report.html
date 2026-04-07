@@ -428,6 +428,9 @@
       <details open>
         <summary>Target: {{ seq_name }}</summary>
         <div class="details-body">
+
+          <!-- Read processing overview -->
+          <h3>Read Processing Summary</h3>
           <div class="tbl-wrap">
             <table>
               <thead>
@@ -439,19 +442,23 @@
               <tbody>
                 {% if tgt.log_stats.paired_reads_total is defined %}
                 <tr>
-                  <td>Total Paired Reads</td>
+                  <td>Total Input Pairs</td>
                   <td>{{ tgt.log_stats.paired_reads_total | fmt_number(0) }}</td>
                 </tr>
                 {% endif %}
                 {% if tgt.log_stats.paired_reads_merged is defined %}
                 <tr>
-                  <td>Paired Reads Merged</td>
-                  <td>{{ tgt.log_stats.paired_reads_merged | fmt_number(0) }}</td>
+                  <td>Pairs Successfully Merged (BBmerge)</td>
+                  <td>{{ tgt.log_stats.paired_reads_merged | fmt_number(0) }}
+                    {% if tgt.log_stats.merge_rate is defined %}
+                      <span class="text-muted">({{ tgt.log_stats.merge_rate | fmt_number(1) }}%)</span>
+                    {% endif %}
+                  </td>
                 </tr>
                 {% endif %}
                 {% if tgt.log_stats.alignment_rate is defined %}
                 <tr>
-                  <td>Overall Alignment Rate</td>
+                  <td>Overall Alignment Rate (Bowtie2)</td>
                   <td>{{ tgt.log_stats.alignment_rate | fmt_number(2) }}%</td>
                 </tr>
                 {% endif %}
@@ -461,16 +468,16 @@
                   <td>{{ tgt.log_stats.mapped_reads_concordant_1 | fmt_number(0) }}</td>
                 </tr>
                 {% endif %}
-                {% if tgt.log_stats.mean_read_depth is defined %}
-                <tr>
-                  <td>Mean Read Depth</td>
-                  <td>{{ tgt.log_stats.mean_read_depth | fmt_number(1) }}</td>
-                </tr>
-                {% endif %}
                 {% if tgt.log_stats.quality_filtered_reads is defined %}
                 <tr>
                   <td>Quality-Filtered Reads</td>
                   <td>{{ tgt.log_stats.quality_filtered_reads | fmt_number(0) }}</td>
+                </tr>
+                {% endif %}
+                {% if tgt.log_stats.mean_read_depth is defined %}
+                <tr>
+                  <td>Mean Read Depth</td>
+                  <td>{{ tgt.log_stats.mean_read_depth | fmt_number(1) }}</td>
                 </tr>
                 {% endif %}
                 {% if not tgt.log_stats %}
@@ -479,6 +486,50 @@
               </tbody>
             </table>
           </div>
+
+          <!-- Per-channel QC three-line table -->
+          <h3>Per-Channel Quality Control</h3>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Channel</th>
+                  <th>Total Read Depth</th>
+                  <th>Total Mutations</th>
+                  <th>Median Mutation Rate</th>
+                  <th>Mean Read Depth</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% set has_channel_data = false %}
+                {% for label in ["modified", "untreated", "denatured"] %}
+                  {% set depth_key  = "total_read_depth_"  ~ label %}
+                  {% set mut_key    = "total_mutations_"    ~ label %}
+                  {% set rate_key   = "mutation_rate_"      ~ label %}
+                  {% set mean_key   = "mean_read_depth_"    ~ label %}
+                  {% if tgt.profile_stats[depth_key] is defined or tgt.log_stats[rate_key] is defined %}
+                  <tr>
+                    <td><strong>{{ label | capitalize }}</strong></td>
+                    <td>{{ tgt.profile_stats[depth_key] | fmt_number(0) if tgt.profile_stats[depth_key] is defined else "N/A" }}</td>
+                    <td>{{ tgt.profile_stats[mut_key] | fmt_number(0) if tgt.profile_stats[mut_key] is defined else "N/A" }}</td>
+                    <td>
+                      {% if tgt.log_stats[rate_key] is defined %}
+                        {{ tgt.log_stats[rate_key] | fmt_number(4) }}
+                      {% elif tgt.profile_stats[rate_key] is defined %}
+                        {{ tgt.profile_stats[rate_key] | fmt_number(4) }}
+                      {% else %}N/A{% endif %}
+                    </td>
+                    <td>{{ tgt.profile_stats[mean_key] | fmt_number(1) if tgt.profile_stats[mean_key] is defined else "N/A" }}</td>
+                  </tr>
+                  {% endif %}
+                {% endfor %}
+                {% if not tgt.profile_stats %}
+                <tr><td colspan="5" class="text-muted text-center">Profile data not available</td></tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+
         </div>
       </details>
       {% endfor %}
@@ -502,43 +553,50 @@
         <summary>Target: {{ seq_name }}</summary>
         <div class="details-body">
 
-          <h3>Mutation Rates</h3>
+          <h3>Mutation Rates by Channel</h3>
           <div class="tbl-wrap">
             <table>
               <thead>
                 <tr>
                   <th>Channel</th>
-                  <th>Mutation Rate (%)</th>
+                  <th>Median Mutation Rate</th>
+                  <th>Total Mutations</th>
+                  <th>Total Read Depth</th>
                 </tr>
               </thead>
               <tbody>
-                {% if tgt.log_stats.mutation_rate_modified is defined %}
-                <tr>
-                  <td>Modified</td>
-                  <td>{{ tgt.log_stats.mutation_rate_modified | fmt_number(4) }}</td>
-                </tr>
-                {% endif %}
-                {% if tgt.log_stats.mutation_rate_untreated is defined %}
-                <tr>
-                  <td>Untreated</td>
-                  <td>{{ tgt.log_stats.mutation_rate_untreated | fmt_number(4) }}</td>
-                </tr>
-                {% endif %}
-                {% if tgt.log_stats.mutation_rate_denatured is defined %}
-                <tr>
-                  <td>Denatured</td>
-                  <td>{{ tgt.log_stats.mutation_rate_denatured | fmt_number(4) }}</td>
-                </tr>
-                {% endif %}
+                {% set any_mut = false %}
+                {% for label in ["modified", "untreated", "denatured"] %}
+                  {% set rate_key  = "mutation_rate_"      ~ label %}
+                  {% set mut_key   = "total_mutations_"    ~ label %}
+                  {% set depth_key = "total_read_depth_"   ~ label %}
+                  {# Check log_stats first, then profile_stats for rate #}
+                  {% set rate_val = tgt.log_stats[rate_key] if tgt.log_stats[rate_key] is defined else tgt.profile_stats[rate_key] %}
+                  {% if rate_val is defined or tgt.profile_stats[depth_key] is defined %}
+                  <tr>
+                    <td><strong>{{ label | capitalize }}</strong></td>
+                    <td>{{ rate_val | fmt_number(5) if rate_val is defined else "N/A" }}</td>
+                    <td>{{ tgt.profile_stats[mut_key] | fmt_number(0) if tgt.profile_stats[mut_key] is defined else "N/A" }}</td>
+                    <td>{{ tgt.profile_stats[depth_key] | fmt_number(0) if tgt.profile_stats[depth_key] is defined else "N/A" }}</td>
+                  </tr>
+                  {% endif %}
+                {% endfor %}
                 {% if tgt.log_stats.high_quality_profile_pct is defined %}
                 <tr>
-                  <td>High-Quality Profile (%)</td>
-                  <td>{{ tgt.log_stats.high_quality_profile_pct | fmt_number(1) }}</td>
+                  <td colspan="2"><strong>High-Quality Profile (%)</strong></td>
+                  <td colspan="2">{{ tgt.log_stats.high_quality_profile_pct | fmt_number(1) }}%</td>
+                </tr>
+                {% elif tgt.profile_stats.high_quality_profile_pct is defined %}
+                <tr>
+                  <td colspan="2"><strong>High-Quality Profile (%)</strong></td>
+                  <td colspan="2">{{ tgt.profile_stats.high_quality_profile_pct | fmt_number(1) }}%</td>
                 </tr>
                 {% endif %}
                 {% if not (tgt.log_stats.mutation_rate_modified is defined or
-                           tgt.log_stats.mutation_rate_untreated is defined) %}
-                <tr><td colspan="2" class="text-muted text-center">Mutation rate data not available</td></tr>
+                           tgt.log_stats.mutation_rate_untreated is defined or
+                           tgt.profile_stats.mutation_rate_modified is defined or
+                           tgt.profile_stats.mutation_rate_untreated is defined) %}
+                <tr><td colspan="4" class="text-muted text-center">Mutation rate data not available — check profile.txt file</td></tr>
                 {% endif %}
               </tbody>
             </table>
@@ -702,10 +760,10 @@
             <tr>
               <th>Sample</th>
               <th>Target</th>
-              <th>Total Reads</th>
-              <th>Merged Reads</th>
-              <th>Quality Filtered</th>
+              <th>Total Input Pairs</th>
+              <th>Pairs Merged</th>
               <th>Alignment Rate</th>
+              <th>Mean Read Depth</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -717,9 +775,14 @@
                 <td>{{ sample_name }}</td>
                 <td>{{ seq_name }}</td>
                 <td>{{ tgt.log_stats.paired_reads_total | fmt_number(0) if tgt.log_stats.paired_reads_total is defined else "N/A" }}</td>
-                <td>{{ tgt.log_stats.paired_reads_merged | fmt_number(0) if tgt.log_stats.paired_reads_merged is defined else "N/A" }}</td>
-                <td>{{ tgt.log_stats.quality_filtered_reads | fmt_number(0) if tgt.log_stats.quality_filtered_reads is defined else "N/A" }}</td>
+                <td>
+                  {{ tgt.log_stats.paired_reads_merged | fmt_number(0) if tgt.log_stats.paired_reads_merged is defined else "N/A" }}
+                  {% if tgt.log_stats.merge_rate is defined %}
+                    <span class="text-muted">({{ tgt.log_stats.merge_rate | fmt_number(1) }}%)</span>
+                  {% endif %}
+                </td>
                 <td>{{ align | fmt_number(2) ~ "%" if align is defined else "N/A" }}</td>
+                <td>{{ tgt.log_stats.mean_read_depth | fmt_number(1) if tgt.log_stats.mean_read_depth is defined else "N/A" }}</td>
                 <td>
                   {% if align is defined %}
                     {% if align >= 70 %}
@@ -774,17 +837,23 @@
           <div class="tbl-wrap">
             <table>
               <thead>
-                <tr><th>Software</th><th>Purpose</th></tr>
+                <tr><th>Software</th><th>Version</th><th>Purpose</th></tr>
               </thead>
               <tbody>
-                <tr><td>Snakemake</td><td>Workflow management</td></tr>
-                <tr><td>FastQC</td><td>Read-level quality control</td></tr>
-                <tr><td>MultiQC</td><td>QC report aggregation</td></tr>
-                <tr><td>ShapeMapper2</td><td>SHAPE reactivity computation</td></tr>
-                <tr><td>RNAstructure</td><td>RNA secondary-structure prediction</td></tr>
+                <tr><td>Snakemake</td>     <td>—</td>                                                                               <td>Workflow management</td></tr>
+                <tr><td>FastQC</td>        <td>—</td>                                                                               <td>Read-level quality control</td></tr>
+                <tr><td>MultiQC</td>       <td>—</td>                                                                               <td>QC report aggregation</td></tr>
+                <tr><td>BBMerge</td>       <td>{{ software_versions.bbmerge if software_versions.bbmerge else "—" }}</td>           <td>Paired-end read merging</td></tr>
+                <tr><td>Bowtie2</td>       <td>{{ software_versions.bowtie2 if software_versions.bowtie2 else "—" }}</td>           <td>Read alignment</td></tr>
+                <tr><td>ShapeMapper2</td>  <td>{{ software_versions.shapemapper if software_versions.shapemapper else "—" }}</td>   <td>SHAPE reactivity computation</td></tr>
+                <tr><td>RNAstructure</td>  <td>—</td>                                                                               <td>RNA secondary-structure prediction</td></tr>
               </tbody>
             </table>
           </div>
+          <p class="text-muted mt-8" style="font-size:12px;">
+            Version numbers are extracted automatically from ShapeMapper log files where available.
+            Dashes (—) indicate the version was not recorded in the log.
+          </p>
         </div>
       </details>
 

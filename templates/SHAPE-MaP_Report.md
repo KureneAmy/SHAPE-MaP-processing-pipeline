@@ -68,15 +68,25 @@ were computed and used for RNA secondary-structure prediction with **RNAstructur
 {% for seq_name, tgt in sample_data.targets.items() %}
 #### Target: {{ seq_name }}
 
+**Read Processing Summary**
+
 | Metric | Value |
 |--------|-------|
-{% if tgt.log_stats.paired_reads_total is defined %}| Total Paired Reads | {{ "{:,}".format(tgt.log_stats.paired_reads_total) }} |
-{% endif %}{% if tgt.log_stats.paired_reads_merged is defined %}| Paired Reads Merged | {{ "{:,}".format(tgt.log_stats.paired_reads_merged) }} |
+{% if tgt.log_stats.paired_reads_total is defined %}| Total Input Pairs | {{ "{:,}".format(tgt.log_stats.paired_reads_total) }} |
+{% endif %}{% if tgt.log_stats.paired_reads_merged is defined %}| Pairs Merged (BBmerge) | {{ "{:,}".format(tgt.log_stats.paired_reads_merged) }}{% if tgt.log_stats.merge_rate is defined %} ({{ "%.1f"|format(tgt.log_stats.merge_rate) }}%){% endif %} |
 {% endif %}{% if tgt.log_stats.alignment_rate is defined %}| Overall Alignment Rate | {{ "%.2f"|format(tgt.log_stats.alignment_rate) }}% |
 {% endif %}{% if tgt.log_stats.mapped_reads_concordant_1 is defined %}| Concordantly Mapped Reads (1×) | {{ "{:,}".format(tgt.log_stats.mapped_reads_concordant_1) }} |
 {% endif %}{% if tgt.log_stats.mean_read_depth is defined %}| Mean Read Depth | {{ "%.1f"|format(tgt.log_stats.mean_read_depth) }} |
 {% endif %}{% if tgt.log_stats.quality_filtered_reads is defined %}| Quality-Filtered Reads | {{ "{:,}".format(tgt.log_stats.quality_filtered_reads) }} |
 {% endif %}{% if not tgt.log_stats %}| (no log data available) | — |
+{% endif %}
+
+**Per-Channel Quality Control**
+
+| Channel | Total Read Depth | Total Mutations | Median Mutation Rate | Mean Read Depth |
+|---------|-----------------|-----------------|---------------------|-----------------|
+{% for label in ["modified", "untreated", "denatured"] %}{% set depth_key = "total_read_depth_" ~ label %}{% set mut_key = "total_mutations_" ~ label %}{% set rate_key = "mutation_rate_" ~ label %}{% set mean_key = "mean_read_depth_" ~ label %}{% if tgt.profile_stats[depth_key] is defined or tgt.log_stats[rate_key] is defined %}| {{ label | capitalize }} | {{ "{:,}".format(tgt.profile_stats[depth_key]) if tgt.profile_stats[depth_key] is defined else "N/A" }} | {{ "{:,}".format(tgt.profile_stats[mut_key]) if tgt.profile_stats[mut_key] is defined else "N/A" }} | {{ "%.5f"|format(tgt.log_stats[rate_key]) if tgt.log_stats[rate_key] is defined else ("%.5f"|format(tgt.profile_stats[rate_key]) if tgt.profile_stats[rate_key] is defined else "N/A") }} | {{ "%.1f"|format(tgt.profile_stats[mean_key]) if tgt.profile_stats[mean_key] is defined else "N/A" }} |
+{% endif %}{% endfor %}{% if not tgt.profile_stats %}| (profile data not available) | — | — | — | — |
 {% endif %}
 
 {% endfor %}
@@ -92,15 +102,14 @@ were computed and used for RNA secondary-structure prediction with **RNAstructur
 {% for seq_name, tgt in sample_data.targets.items() %}
 #### Target: {{ seq_name }}
 
-**Mutation Rates**
+**Mutation Rates by Channel**
 
-| Channel | Mutation Rate (%) |
-|---------|-------------------|
-{% if tgt.log_stats.mutation_rate_modified is defined %}| Modified | {{ "%.4f"|format(tgt.log_stats.mutation_rate_modified) }} |
-{% endif %}{% if tgt.log_stats.mutation_rate_untreated is defined %}| Untreated | {{ "%.4f"|format(tgt.log_stats.mutation_rate_untreated) }} |
-{% endif %}{% if tgt.log_stats.mutation_rate_denatured is defined %}| Denatured | {{ "%.4f"|format(tgt.log_stats.mutation_rate_denatured) }} |
-{% endif %}{% if tgt.log_stats.high_quality_profile_pct is defined %}| High-Quality Profile (%) | {{ "%.1f"|format(tgt.log_stats.high_quality_profile_pct) }} |
-{% endif %}{% if not (tgt.log_stats.mutation_rate_modified is defined or tgt.log_stats.mutation_rate_untreated is defined) %}| (no mutation rate data) | — |
+| Channel | Median Mutation Rate | Total Mutations | Total Read Depth |
+|---------|---------------------|-----------------|-----------------|
+{% for label in ["modified", "untreated", "denatured"] %}{% set rate_key = "mutation_rate_" ~ label %}{% set mut_key = "total_mutations_" ~ label %}{% set depth_key = "total_read_depth_" ~ label %}{% set rate_val = tgt.log_stats[rate_key] if tgt.log_stats[rate_key] is defined else tgt.profile_stats[rate_key] %}{% if rate_val is defined or tgt.profile_stats[depth_key] is defined %}| {{ label | capitalize }} | {{ "%.5f"|format(rate_val) if rate_val is defined else "N/A" }} | {{ "{:,}".format(tgt.profile_stats[mut_key]) if tgt.profile_stats[mut_key] is defined else "N/A" }} | {{ "{:,}".format(tgt.profile_stats[depth_key]) if tgt.profile_stats[depth_key] is defined else "N/A" }} |
+{% endif %}{% endfor %}{% if tgt.log_stats.high_quality_profile_pct is defined %}| High-Quality Profile (%) | {{ "%.1f"|format(tgt.log_stats.high_quality_profile_pct) }}% | — | — |
+{% elif tgt.profile_stats.high_quality_profile_pct is defined %}| High-Quality Profile (%) | {{ "%.1f"|format(tgt.profile_stats.high_quality_profile_pct) }}% | — | — |
+{% endif %}{% if not (tgt.log_stats.mutation_rate_modified is defined or tgt.log_stats.mutation_rate_untreated is defined or tgt.profile_stats.mutation_rate_modified is defined or tgt.profile_stats.mutation_rate_untreated is defined) %}| (no mutation rate data available) | — | — | — |
 {% endif %}
 
 **Reactivity Summary**
@@ -173,9 +182,9 @@ A comprehensive MultiQC report aggregating FastQC results for all samples is ava
 
 ### Sample QC Summary
 
-| Sample | Target | Total Reads | Merged Reads | Quality Filtered | Alignment Rate | Status |
-|--------|--------|-------------|--------------|------------------|----------------|--------|
-{% for sample_name, sample_data in samples.items() %}{% for seq_name, tgt in sample_data.targets.items() %}{% set align = tgt.log_stats.alignment_rate %}| {{ sample_name }} | {{ seq_name }} | {{ "{:,}".format(tgt.log_stats.paired_reads_total) if tgt.log_stats.paired_reads_total is defined else "N/A" }} | {{ "{:,}".format(tgt.log_stats.paired_reads_merged) if tgt.log_stats.paired_reads_merged is defined else "N/A" }} | {{ "{:,}".format(tgt.log_stats.quality_filtered_reads) if tgt.log_stats.quality_filtered_reads is defined else "N/A" }} | {{ "%.2f"|format(align) ~ "%" if align is defined else "N/A" }} | {% if align is defined %}{% if align >= 70 %}PASS{% elif align >= 40 %}WARN{% else %}LOW{% endif %}{% else %}N/A{% endif %} |
+| Sample | Target | Total Input Pairs | Pairs Merged | Alignment Rate | Mean Read Depth | Status |
+|--------|--------|-------------------|--------------|----------------|-----------------|--------|
+{% for sample_name, sample_data in samples.items() %}{% for seq_name, tgt in sample_data.targets.items() %}{% set align = tgt.log_stats.alignment_rate %}| {{ sample_name }} | {{ seq_name }} | {{ "{:,}".format(tgt.log_stats.paired_reads_total) if tgt.log_stats.paired_reads_total is defined else "N/A" }} | {{ "{:,}".format(tgt.log_stats.paired_reads_merged) if tgt.log_stats.paired_reads_merged is defined else "N/A" }}{% if tgt.log_stats.merge_rate is defined %} ({{ "%.1f"|format(tgt.log_stats.merge_rate) }}%){% endif %} | {{ "%.2f"|format(align) ~ "%" if align is defined else "N/A" }} | {{ "%.1f"|format(tgt.log_stats.mean_read_depth) if tgt.log_stats.mean_read_depth is defined else "N/A" }} | {% if align is defined %}{% if align >= 70 %}PASS{% elif align >= 40 %}WARN{% else %}LOW{% endif %}{% else %}N/A{% endif %} |
 {% endfor %}{% endfor %}{% if not samples %}| (no data) | — | — | — | — | — | — |
 {% endif %}
 
@@ -198,13 +207,17 @@ based on Snakemake. The pipeline encompasses the following major steps:
 
 ### Software
 
-| Software | Purpose |
-|----------|---------|
-| Snakemake | Workflow management |
-| FastQC | Read-level quality control |
-| MultiQC | QC report aggregation |
-| ShapeMapper2 | SHAPE reactivity computation |
-| RNAstructure | RNA secondary-structure prediction |
+| Software | Version | Purpose |
+|----------|---------|---------|
+| Snakemake | — | Workflow management |
+| FastQC | — | Read-level quality control |
+| MultiQC | — | QC report aggregation |
+| BBMerge | {{ software_versions.bbmerge if software_versions.bbmerge else "—" }} | Paired-end read merging |
+| Bowtie2 | {{ software_versions.bowtie2 if software_versions.bowtie2 else "—" }} | Read alignment |
+| ShapeMapper2 | {{ software_versions.shapemapper if software_versions.shapemapper else "—" }} | SHAPE reactivity computation |
+| RNAstructure | — | RNA secondary-structure prediction |
+
+*Version numbers are extracted automatically from ShapeMapper log files where available.*
 
 ### References
 
