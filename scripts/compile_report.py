@@ -154,8 +154,8 @@ def parse_shapemapper_log(log_path):
             # "mutation rate  modified: 0.0483" or "modified: mutation rate: 0.0483"
             rf"mutation rate\s+{label}[:\s]+([0-9.eE+\-]+)",
             rf"{label}[:\s]+mutation rate[:\s]+([0-9.eE+\-]+)",
-            # Generic: "modified ... 0.0483" inside a QC block
-            rf"^\s*{label}[^\n]*?([0-9]\.[0-9]{{3,}})",
+            # Generic: "modified ... 0.0483" or "modified ... 1.2e-4" inside a QC block
+            rf"^\s*{label}[^\n]*?([0-9]+(?:\.[0-9]+)?(?:[eE][+\-]?[0-9]+)?)",
         ]
         for pat in patterns:
             m = re.search(pat, content, re.IGNORECASE | re.MULTILINE)
@@ -256,7 +256,8 @@ def parse_profile_txt(profile_txt_path):
     # Per-channel statistics
     for label in ("modified", "untreated", "denatured"):
         mutations = _col_sum(f"{label}_mutations")
-        read_depth = _col_sum(f"{label}_read_depth")
+        read_depth_vals = _col_values(f"{label}_read_depth")
+        read_depth = int(sum(read_depth_vals)) if read_depth_vals else None
         rates = _col_values(f"{label}_rate")
 
         if mutations is not None:
@@ -264,12 +265,11 @@ def parse_profile_txt(profile_txt_path):
         if read_depth is not None:
             stats[f"total_read_depth_{label}"] = read_depth
         if rates:
-            stats[f"mutation_rate_{label}"] = round(
-                _stats.median(rates), 6
-            )
+            stats[f"mutation_rate_{label}"] = round(_stats.median(rates), 5)
+        if read_depth_vals:
             stats[f"mean_read_depth_{label}"] = round(
-                sum(_col_values(f"{label}_read_depth")) / len(_col_values(f"{label}_read_depth")), 1
-            ) if _col_values(f"{label}_read_depth") else None
+                sum(read_depth_vals) / len(read_depth_vals), 1
+            )
 
     # Reactivity statistics from Norm_profile column (normalised reactivities)
     norm_reactivities = _col_values("norm_profile")
