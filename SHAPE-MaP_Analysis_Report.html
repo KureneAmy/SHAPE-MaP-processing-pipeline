@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SHAPE-MaP Analysis Report</title>
+  <style>
+    /* ------------------------------------------------------------------ */
+    /* Reset & base                                                         */
+    /* ------------------------------------------------------------------ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 14px;
+      color: #2c3e50;
+      background: #f4f6f9;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    a { color: #1a73e8; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ------------------------------------------------------------------ */
+    /* Top navigation bar                                                   */
+    /* ------------------------------------------------------------------ */
+    header.topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 56px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+    header.topbar .brand {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    header.topbar .brand span { color: #90caf9; }
+    header.topbar .meta {
+      font-size: 12px;
+      opacity: 0.85;
+      text-align: right;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Layout: sidebar + main + info-panel                                  */
+    /* ------------------------------------------------------------------ */
+    .layout {
+      display: flex;
+      flex: 1;
+    }
+
+    /* Left sidebar nav */
+    nav.sidebar {
+      width: 210px;
+      min-width: 210px;
+      background: #fff;
+      border-right: 1px solid #dde3ed;
+      padding: 20px 0;
+      position: sticky;
+      top: 56px;
+      height: calc(100vh - 56px);
+      overflow-y: auto;
+    }
+    nav.sidebar .nav-section {
+      padding: 6px 16px 2px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #90a4ae;
+    }
+    nav.sidebar a {
+      display: block;
+      padding: 7px 20px;
+      color: #455a64;
+      font-size: 13px;
+      border-left: 3px solid transparent;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    nav.sidebar a:hover,
+    nav.sidebar a.active {
+      background: #e3f2fd;
+      border-left-color: #1565c0;
+      color: #0d47a1;
+      text-decoration: none;
+    }
+
+    /* Main content */
+    main.content {
+      flex: 1;
+      padding: 28px 32px;
+      max-width: 960px;
+    }
+
+    /* Right info panel */
+    aside.info-panel {
+      width: 240px;
+      min-width: 240px;
+      background: #fff;
+      border-left: 1px solid #dde3ed;
+      padding: 20px 16px;
+      position: sticky;
+      top: 56px;
+      height: calc(100vh - 56px);
+      overflow-y: auto;
+    }
+    aside.info-panel h3 {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #90a4ae;
+      margin-bottom: 12px;
+    }
+    aside.info-panel .meta-item {
+      margin-bottom: 12px;
+    }
+    aside.info-panel .meta-label {
+      font-size: 11px;
+      color: #78909c;
+      font-weight: 600;
+    }
+    aside.info-panel .meta-value {
+      font-size: 13px;
+      color: #2c3e50;
+      word-break: break-word;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Section headings                                                     */
+    /* ------------------------------------------------------------------ */
+    section { margin-bottom: 36px; }
+    section h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0d47a1;
+      border-bottom: 2px solid #1565c0;
+      padding-bottom: 6px;
+      margin-bottom: 16px;
+    }
+    section h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1565c0;
+      margin: 16px 0 8px;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Cards / boxes                                                        */
+    /* ------------------------------------------------------------------ */
+    .card {
+      background: #fff;
+      border: 1px solid #dde3ed;
+      border-radius: 6px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #546e7a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    /* KPI / stat cards row */
+    .kpi-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .kpi-card {
+      flex: 1 1 160px;
+      background: #fff;
+      border: 1px solid #dde3ed;
+      border-top: 3px solid #1565c0;
+      border-radius: 6px;
+      padding: 14px 16px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .kpi-card .kpi-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: #0d47a1;
+    }
+    .kpi-card .kpi-label {
+      font-size: 12px;
+      color: #78909c;
+      margin-top: 4px;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Tables                                                               */
+    /* ------------------------------------------------------------------ */
+    .tbl-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead th {
+      background: #e3f2fd;
+      color: #1565c0;
+      font-weight: 600;
+      padding: 9px 12px;
+      text-align: left;
+      border-bottom: 2px solid #90caf9;
+      white-space: nowrap;
+    }
+    tbody tr:nth-child(even) { background: #f8fbff; }
+    tbody td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #e8edf3;
+      vertical-align: top;
+    }
+    tbody tr:hover { background: #e3f2fd; }
+
+    /* ------------------------------------------------------------------ */
+    /* Badges                                                               */
+    /* ------------------------------------------------------------------ */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-pass  { background: #e8f5e9; color: #2e7d32; }
+    .badge-warn  { background: #fff8e1; color: #f57f17; }
+    .badge-info  { background: #e3f2fd; color: #1565c0; }
+
+    /* ------------------------------------------------------------------ */
+    /* Collapsible details                                                  */
+    /* ------------------------------------------------------------------ */
+    details {
+      border: 1px solid #dde3ed;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      background: #fff;
+    }
+    details summary {
+      cursor: pointer;
+      padding: 10px 16px;
+      font-weight: 600;
+      color: #1565c0;
+      user-select: none;
+      list-style: none;
+    }
+    details summary::-webkit-details-marker { display: none; }
+    details summary::before {
+      content: "▶ ";
+      font-size: 10px;
+      color: #90a4ae;
+    }
+    details[open] summary::before { content: "▼ "; }
+    details .details-body { padding: 12px 16px 16px; }
+
+    /* ------------------------------------------------------------------ */
+    /* Misc utilities                                                       */
+    /* ------------------------------------------------------------------ */
+    .text-muted  { color: #78909c; }
+    .text-center { text-align: center; }
+    .mt-8  { margin-top: 8px; }
+    .mt-16 { margin-top: 16px; }
+    p { line-height: 1.6; margin-bottom: 10px; }
+    ul, ol { padding-left: 20px; line-height: 1.8; }
+    code {
+      background: #f0f4f8;
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-family: "Consolas", monospace;
+      font-size: 12px;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Footer                                                               */
+    /* ------------------------------------------------------------------ */
+    footer {
+      text-align: center;
+      padding: 14px;
+      font-size: 12px;
+      color: #90a4ae;
+      background: #fff;
+      border-top: 1px solid #dde3ed;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Responsive                                                           */
+    /* ------------------------------------------------------------------ */
+    @media (max-width: 900px) {
+      nav.sidebar, aside.info-panel { display: none; }
+      main.content { max-width: 100%; padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===================================================================== -->
+<!-- Top navigation bar                                                     -->
+<!-- ===================================================================== -->
+<header class="topbar">
+  <div class="brand">Easy<span>Omics</span> &nbsp;|&nbsp; SHAPE-MaP Analysis Pipeline</div>
+  <div class="meta">
+    SHAPE-MaP Analysis Report<br>
+    Report Date: 2026-04-07
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ================================================================== -->
+  <!-- Left sidebar                                                        -->
+  <!-- ================================================================== -->
+  <nav class="sidebar">
+    <div class="nav-section">Overview</div>
+    <a href="#summary">Executive Summary</a>
+    <a href="#quality">Data Quality</a>
+    <div class="nav-section">Analysis</div>
+    <a href="#reactivity">SHAPE Reactivity</a>
+    <a href="#shapemapper">ShapeMapper Results</a>
+    <a href="#structure">RNA Structure</a>
+    <div class="nav-section">Report</div>
+    <a href="#qc-metrics">QC Metrics</a>
+    <a href="#methods">Methods</a>
+  </nav>
+
+  <!-- ================================================================== -->
+  <!-- Main content                                                        -->
+  <!-- ================================================================== -->
+  <main class="content">
+
+    <!-- ---------------------------------------------------------------- -->
+    <!-- 1. Executive Summary                                              -->
+    <!-- ---------------------------------------------------------------- -->
+    <section id="summary">
+      <h2>Executive Summary</h2>
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-value">1</div>
+          <div class="kpi-label">Samples Analysed</div>
+        </div>
+        
+        
+          
+        
+        <div class="kpi-card">
+          <div class="kpi-value">1</div>
+          <div class="kpi-label">Target Sequences</div>
+        </div>
+        
+        
+          
+            
+              
+              
+            
+          
+        
+        <div class="kpi-card">
+          <div class="kpi-value">
+            
+              29.7%
+            
+          </div>
+          <div class="kpi-label">Avg Alignment Rate</div>
+        </div>
+        
+        
+          
+            
+              
+              
+            
+          
+        
+        <div class="kpi-card">
+          <div class="kpi-value">
+            
+              0.449
+            
+          </div>
+          <div class="kpi-label">Avg SHAPE Reactivity</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Analysis Overview</div>
+        <p>
+          This report summarises the results of a SHAPE-MaP (Selective 2′-Hydroxyl Acylation analysed
+          by Primer Extension and Mutational Profiling) experiment processed with
+          <strong>ShapeMapper2</strong> and the EasyOmics SHAPE-MaP pipeline.
+        </p>
+        <p>
+          A total of <strong>1</strong> sample(s) were processed against
+          <strong>1</strong> target sequence(s).
+          SHAPE reactivity values were computed and used for RNA secondary-structure prediction
+          with <strong>RNAstructure</strong>.
+        </p>
+        
+        <p class="text-muted">Institution: BIG &nbsp;|&nbsp; PI: HYJ</p>
+        
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------------------------- -->
+    <!-- 2. Data Quality Assessment                                        -->
+    <!-- ---------------------------------------------------------------- -->
+    <section id="quality">
+      <h2>Data Quality Assessment</h2>
+
+      
+      <h3>Sample: test</h3>
+      
+      <details open>
+        <summary>Target: Hs_DRAIC_ncRNA</summary>
+        <div class="details-body">
+
+          <!-- Read processing overview -->
+          <h3>Read Processing Summary</h3>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                
+                
+                <tr>
+                  <td>Overall Alignment Rate (Bowtie2)</td>
+                  <td>29.71%</td>
+                </tr>
+                
+                
+                <tr>
+                  <td>Concordantly Mapped Reads (1×)</td>
+                  <td>22,148</td>
+                </tr>
+                
+                
+                
+                <tr>
+                  <td>Mean Read Depth</td>
+                  <td>76,114.7</td>
+                </tr>
+                
+                
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Per-channel QC three-line table -->
+          <h3>Per-Channel Quality Control</h3>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Channel</th>
+                  <th>Total Read Depth</th>
+                  <th>Total Mutations</th>
+                  <th>Median Mutation Rate</th>
+                  <th>Mean Read Depth</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                
+                  
+                  
+                  
+                  
+                  
+                  <tr>
+                    <td><strong>Modified</strong></td>
+                    <td>132,059,024</td>
+                    <td>1,233,108</td>
+                    <td>
+                      
+                        0.0058
+                      
+                    </td>
+                    <td>76,114.7</td>
+                  </tr>
+                  
+                
+                  
+                  
+                  
+                  
+                  
+                  <tr>
+                    <td><strong>Untreated</strong></td>
+                    <td>138,850,709</td>
+                    <td>579,155</td>
+                    <td>
+                      
+                        0.0000
+                      
+                    </td>
+                    <td>80,029.2</td>
+                  </tr>
+                  
+                
+                  
+                  
+                  
+                  
+                  
+                  <tr>
+                    <td><strong>Denatured</strong></td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>
+                      N/A
+                    </td>
+                    <td>0.0</td>
+                  </tr>
+                  
+                
+                
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </details>
+      
+      
+
+      
+    </section>
+
+    <!-- ---------------------------------------------------------------- -->
+    <!-- 3. SHAPE Reactivity Analysis                                      -->
+    <!-- ---------------------------------------------------------------- -->
+    <section id="reactivity">
+      <h2>SHAPE Reactivity Analysis</h2>
+
+      
+      <h3>Sample: test</h3>
+      
+      <details open>
+        <summary>Target: Hs_DRAIC_ncRNA</summary>
+        <div class="details-body">
+
+          <h3>Mutation Rates by Channel</h3>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Channel</th>
+                  <th>Median Mutation Rate</th>
+                  <th>Total Mutations</th>
+                  <th>Total Read Depth</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                
+                  
+                  
+                  
+                  
+                  
+                  
+                  <tr>
+                    <td><strong>Modified</strong></td>
+                    <td>0.00576</td>
+                    <td>1,233,108</td>
+                    <td>132,059,024</td>
+                  </tr>
+                  
+                
+                  
+                  
+                  
+                  
+                  
+                  
+                  <tr>
+                    <td><strong>Untreated</strong></td>
+                    <td>0.00000</td>
+                    <td>579,155</td>
+                    <td>138,850,709</td>
+                  </tr>
+                  
+                
+                  
+                  
+                  
+                  
+                  
+                  
+                  <tr>
+                    <td><strong>Denatured</strong></td>
+                    <td>N/A</td>
+                    <td>0</td>
+                    <td>0</td>
+                  </tr>
+                  
+                
+                
+                <tr>
+                  <td colspan="2"><strong>High-Quality Profile (%)</strong></td>
+                  <td colspan="2">27.7%</td>
+                </tr>
+                
+                
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Reactivity Summary</h3>
+          
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Nucleotides with Valid Reactivity</td>
+                  <td>480</td>
+                </tr>
+                <tr>
+                  <td>Mean Reactivity</td>
+                  <td>0.4494</td>
+                </tr>
+                <tr>
+                  <td>Median Reactivity</td>
+                  <td>0.2664</td>
+                </tr>
+                <tr>
+                  <td>Std Dev</td>
+                  <td>0.5502</td>
+                </tr>
+                <tr>
+                  <td>Maximum Reactivity</td>
+                  <td>3.0408</td>
+                </tr>
+                <tr>
+                  <td>Reactive Fraction (&gt; 0.4)</td>
+                  <td>41.7%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+
+        </div>
+      </details>
+      
+      
+    </section>
+
+    <!-- ---------------------------------------------------------------- -->
+    <!-- 4. ShapeMapper Results                                            -->
+    <!-- ---------------------------------------------------------------- -->
+    <section id="shapemapper">
+      <h2>ShapeMapper Results</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Sample</th>
+              <th>Target</th>
+              <th>Alignment Rate (%)</th>
+              <th>Mean Depth</th>
+              <th>Mut. Rate Modified (%)</th>
+              <th>Mut. Rate Untreated (%)</th>
+              <th>Reactive Fraction</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+              
+              <tr>
+                <td>test</td>
+                <td>Hs_DRAIC_ncRNA</td>
+                <td>29.71</td>
+                <td>76,114.7</td>
+                <td>0.0058</td>
+                <td>0.0000</td>
+                <td>41.7%</td>
+              </tr>
+              
+            
+            
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------------------------- -->
+    <!-- 5. RNA Structure Prediction                                       -->
+    <!-- ---------------------------------------------------------------- -->
+    <section id="structure">
+      <h2>RNA Structure Prediction</h2>
+
+      <div class="card">
+        <div class="card-title">Method</div>
+        <p>
+          RNA secondary structures were predicted using
+          <strong>RNAstructure Fold</strong> with SHAPE-directed folding.
+          SHAPE reactivity scores from each sample were used as pseudo-free-energy
+          constraints to guide the thermodynamic folding algorithm.
+        </p>
+        <p>
+          Output files include <code>.ct</code> (connectivity table),
+          <code>.dbn</code> (dot-bracket notation), and
+          <code>.svg</code> (structure visualisation).
+        </p>
+      </div>
+
+      
+      <h3>Sample: test</h3>
+      
+      <details>
+        <summary>Target: Hs_DRAIC_ncRNA</summary>
+        <div class="details-body">
+          <ul>
+            <li>CT file: <code>/mnt1/4.NAS2025/zhangam/easyomics_test/report/SHAPE-MaP/output/test/Hs_DRAIC_ncRNA/test_Hs_DRAIC_ncRNA/structure/test_Hs_DRAIC_ncRNA.ct</code></li>
+            <li>DBN file: <code>/mnt1/4.NAS2025/zhangam/easyomics_test/report/SHAPE-MaP/output/test/Hs_DRAIC_ncRNA/test_Hs_DRAIC_ncRNA/structure/test_Hs_DRAIC_ncRNA.dbn</code></li>
+            
+            <li>Structure SVG: <code>/mnt1/4.NAS2025/zhangam/easyomics_test/report/SHAPE-MaP/output/test/Hs_DRAIC_ncRNA/structure/test_Hs_DRAIC_ncRNA_folding.svg</code></li>
+            
+          </ul>
+        </div>
+      </details>
+      
+      
+    </section>
+
+    <!-- ---------------------------------------------------------------- -->
+    <!-- 6. QC Metrics                                                     -->
+    <!-- ---------------------------------------------------------------- -->
+    <section id="qc-metrics">
+      <h2>QC Metrics</h2>
+
+      <div class="card">
+        <div class="card-title">MultiQC Report</div>
+        
+        <p>
+          A comprehensive MultiQC report is available at:
+          <code>/mnt1/4.NAS2025/zhangam/easyomics_test/report/SHAPE-MaP/output/multiqc_report.html</code>
+        </p>
+        <p>
+          The MultiQC report aggregates FastQC results for all samples and provides
+          interactive quality metrics including sequence quality scores, adapter content,
+          GC content, and per-base quality.
+        </p>
+        
+      </div>
+
+      <h3>Sample QC Summary</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Sample</th>
+              <th>Target</th>
+              <th>Total Input Pairs</th>
+              <th>Pairs Merged</th>
+              <th>Alignment Rate</th>
+              <th>Mean Read Depth</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+              
+              
+              <tr>
+                <td>test</td>
+                <td>Hs_DRAIC_ncRNA</td>
+                <td>N/A</td>
+                <td>
+                  N/A
+                  
+                </td>
+                <td>29.71%</td>
+                <td>76,114.7</td>
+                <td>
+                  
+                    
+                      <span class="badge badge-info">LOW</span>
+                    
+                  
+                </td>
+              </tr>
+              
+            
+            
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------------------------- -->
+    <!-- 7. Methods                                                        -->
+    <!-- ---------------------------------------------------------------- -->
+    <section id="methods">
+      <h2>Methods</h2>
+
+      <details open>
+        <summary>Analysis Pipeline</summary>
+        <div class="details-body">
+          <p>
+            SHAPE-MaP experiments were processed using the
+            <strong>EasyOmics SHAPE-MaP Processing Pipeline</strong> based on Snakemake.
+            The pipeline encompasses the following major steps:
+          </p>
+          <ol>
+            <li><strong>Quality Control</strong> – Raw reads were assessed with FastQC and aggregated with MultiQC.</li>
+            <li><strong>Reference Splitting</strong> – Multi-target reference FASTA files were split into individual sequences.</li>
+            <li><strong>ShapeMapper2</strong> – Modified, untreated (and optionally denatured) read pairs were jointly processed to derive per-nucleotide SHAPE reactivity values.</li>
+            <li><strong>RNA Structure Prediction</strong> – SHAPE-constrained secondary-structure prediction was performed with RNAstructure <code>Fold</code>.</li>
+            <li><strong>Structure Visualisation</strong> – Arc diagrams in SVG format were generated with RNAstructure <code>draw</code>.</li>
+          </ol>
+        </div>
+      </details>
+
+      <details>
+        <summary>Software Versions</summary>
+        <div class="details-body">
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr><th>Software</th><th>Version</th><th>Purpose</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Snakemake</td>     <td>—</td>                                                                               <td>Workflow management</td></tr>
+                <tr><td>FastQC</td>        <td>—</td>                                                                               <td>Read-level quality control</td></tr>
+                <tr><td>MultiQC</td>       <td>—</td>                                                                               <td>QC report aggregation</td></tr>
+                <tr><td>BBMerge</td>       <td>—</td>           <td>Paired-end read merging</td></tr>
+                <tr><td>Bowtie2</td>       <td>—</td>           <td>Read alignment</td></tr>
+                <tr><td>ShapeMapper2</td>  <td>2.3.0</td>   <td>SHAPE reactivity computation</td></tr>
+                <tr><td>RNAstructure</td>  <td>—</td>                                                                               <td>RNA secondary-structure prediction</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-muted mt-8" style="font-size:12px;">
+            Version numbers are extracted automatically from ShapeMapper log files where available.
+            Dashes (—) indicate the version was not recorded in the log.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>References</summary>
+        <div class="details-body">
+          <ol>
+            <li>Busan S, Weeks KM. Accurate detection of chemical modifications in RNA by mutational profiling (MaP) with ShapeMapper 2. <em>RNA</em>. 2018;24(2):143–148.</li>
+            <li>Reuter JS, Mathews DH. RNAstructure: software for RNA secondary structure prediction and analysis. <em>BMC Bioinformatics</em>. 2010;11:129.</li>
+            <li>Ewels P, et al. MultiQC: summarize analysis results for multiple tools and samples in a single report. <em>Bioinformatics</em>. 2016;32(19):3047–3048.</li>
+          </ol>
+        </div>
+      </details>
+    </section>
+
+  </main>
+
+  <!-- ================================================================== -->
+  <!-- Right info panel                                                    -->
+  <!-- ================================================================== -->
+  <aside class="info-panel">
+    <h3>Project Information</h3>
+    
+    <div class="meta-item">
+      <div class="meta-label">Project ID</div>
+      <div class="meta-value">report-test</div>
+    </div>
+    
+    
+    <div class="meta-item">
+      <div class="meta-label">Institution</div>
+      <div class="meta-value">BIG</div>
+    </div>
+    
+    
+    <div class="meta-item">
+      <div class="meta-label">Principal Investigator</div>
+      <div class="meta-value">HYJ</div>
+    </div>
+    
+    <div class="meta-item">
+      <div class="meta-label">Analysis Date</div>
+      <div class="meta-value">2026/04/07</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Report Date</div>
+      <div class="meta-value">2026-04-07</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Samples</div>
+      <div class="meta-value">1</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Output Directory</div>
+      <div class="meta-value" style="font-size:11px; word-break:break-all;">/mnt1/4.NAS2025/zhangam/easyomics_test/report/SHAPE-MaP/output</div>
+    </div>
+  </aside>
+
+</div><!-- .layout -->
+
+<!-- ====================================================================== -->
+<!-- Footer                                                                  -->
+<!-- ====================================================================== -->
+<footer>
+  Generated by the EasyOmics SHAPE-MaP Processing Pipeline &nbsp;|&nbsp;
+  Report Date: 2026-04-07
+</footer>
+
+</body>
+</html>
