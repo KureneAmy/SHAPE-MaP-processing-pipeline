@@ -85,7 +85,7 @@ Here stands an throughout workflow of data analysis.
       pip install snakemake
       ```
 
-4.  **Data Preparation**: The data run by this pipeline is from SRR30943151 and SRR30943152 in the SRA database.The specific processing method is as follows
+4.  **Data Preparation**: The test data run by this pipeline is from SRR30943151 and SRR30943152 in the SRA database.The specific processing method is as follows
 
     ```bash
     # Download the test sra data
@@ -120,6 +120,9 @@ Here stands an throughout workflow of data analysis.
             │       └── SRR30943152_2.fastq.gz
             ├── shapemap.sif
             ├── split_reference.py
+            ├── compile_report.py
+            ├── SHAPE-MaP_Report.html
+            ├── SHAPE-MaP_Report.md
             └── SHAPE-MaP.smk
       ```
       
@@ -182,6 +185,17 @@ Here stands an throughout workflow of data analysis.
         temperature: 37
         maximum: 20
         loop: 30
+
+        report_config:
+		  generate_html: true
+		  html_template: "/mnt/zhangam/SHAPE_MaP/SHAPE-MaP_Report.html"
+		  generate_markdown: false
+		  markdown_template: "/mnt/zhangam/SHAPE_MaP/SHAPE-MaP_Report.md"
+		  report_title: "SHAPE-MaP Analysis Report"
+		  institution: ""
+		  pi_name: ""
+		  project_id: "report-test"
+		  analysis_date: "2026/04/07"
         ```
 
 		Please note the primer settings. If `certain_primer` is used, please set as follows:
